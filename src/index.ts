@@ -1,8 +1,12 @@
-import { initializeServer, startServer } from "./server"
+import { startServer } from "./server";
 
-process.on('unhandledRejection', (err) => {
-    console.error(err)
-    process.exit(1)
-})
+const start = async () => {
+  await startServer();
+};
 
-await startServer()
+process.on("unhandledRejection", (err) => {
+  console.log(err);
+  process.exit(1);
+});
+
+start();

@@ -31,4 +31,19 @@ Tu tarea es completar la implementación de toda la funcionalidad de forma tal d
 6. ???
 7. PROFIT
 
+## Extra tip de santi para santi:
+- ~~Acomodar controller y service para utilizar mongo.~~
+- ~~Agregar paginado, sort, limit, query~~
+- ~~Checkear con crud que mongo este activado y funcionando~~
+- ~~Correr los tests y que no modifiquen la DB y que pasen~~
+- ~~Verificar el uso de middlewares/error hanlders con hapi (joi)~~
+- ~~Faker para probar paginado~~
+- ~~Testear con postman el endpoint /paginated~~
+- ~~Agregar los tests faltantes~~
+- Documentar todo
+
+## NOTAS: 
+
+
+
 ### Cualquier duda contactarme a https://www.linkedin.com/in/andreujuan/

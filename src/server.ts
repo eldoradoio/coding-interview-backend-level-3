@@ -1,26 +1,36 @@
-import Hapi from '@hapi/hapi'
-import { defineRoutes } from './routes'
-
-const getServer = () => {
-    const server = Hapi.server({
-        host: 'localhost',
-        port: 3000,
-    })
-
-    defineRoutes(server)
-
-    return server
-}
+import Hapi from "@hapi/hapi";
+import { connectDatabase } from "./config/database";
+import { itemRoutes } from "./routes/item.routes";
 
 export const initializeServer = async () => {
-    const server = getServer()
-    await server.initialize()
-    return server
-}
+  const server = Hapi.server({
+    port: process.env.PORT || 3000,
+    host: "localhost",
+  });
+
+  await connectDatabase();
+
+  server.route({
+    method: "GET",
+    path: "/ping",
+    handler: (request, h) => {
+      return h.response({ ok: true }).code(200);
+    },
+  });
+
+  itemRoutes(server);
+
+  return server;
+};
 
 export const startServer = async () => {
-    const server = getServer()
-    await server.start()
-    console.log(`Server running on ${server.info.uri}`)
-    return server
+  const server = await initializeServer();
+  await server.start();
+  console.log("Server running on %s", server.info.uri);
+  return server;
 };
+
+process.on("unhandledRejection", (err) => {
+  console.log(err);
+  process.exit(1);
+});
