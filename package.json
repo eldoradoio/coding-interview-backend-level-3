@@ -18,6 +18,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@hapi/boom": "^10.0.1",
     "@hapi/hapi": "^21.3.10"
   }
 }

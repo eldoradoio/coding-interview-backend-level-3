@@ -1,41 +1,48 @@
+import { DatabaseARepository } from './DatabaseARepository';
+import { DatabaseBRepository } from './DatabaseBRepository';
+
+export interface Item {
+  id: number;
+  name: string;
+  price: number;
+}
+
 export class ItemManager {
-    private items: { 
-        id: number, 
-        name: string, 
-        price: number 
-    }[] = [];
-    private currentId: number = 1;
-
+    private dbARepository: DatabaseARepository = new DatabaseARepository();
+    private dbBRepository: DatabaseBRepository = new DatabaseBRepository();
+  
+    private getRepository(id: number) {
+        return id % 2 === 0 ? this.dbARepository : this.dbBRepository;
+    }
     
-    getAllItems() {
-        return this.items;
+    async getAllItems(): Promise<Item[]> {
+        const [itemsA, itemsB] = await Promise.all([
+          this.dbARepository.getAllItems(),
+          this.dbBRepository.getAllItems()
+        ]);
+        return [...itemsA, ...itemsB];
+    }    
+  
+    async getItemById(id: number): Promise<Item | null> {
+        const repo = this.getRepository(id);
+        const item = repo.getItem(id);
+        return item;
     }
 
-    getItemById(id: number) {
-        return this.items.find(item => item.id === id);
+    async createItem(name: string, price: number): Promise<Item> {
+        const newItem = { id: Date.now(), name, price }; // Generate a unique ID
+        const repo = this.getRepository(newItem.id);
+        return repo.createItem(newItem);
     }
 
-    createItem(name: string, price: number) {
-        const newItem = { id: this.currentId++, name, price };
-        this.items.push(newItem);
-        return newItem;
+    async updateItem(id: number, name: string, price: number): Promise<Item | null> {
+        const repo = this.getRepository(id);
+        return repo.updateItem(id, name, price);
     }
 
-    updateItem(id: number, name: string, price: number) {
-        const itemIndex = this.items.findIndex(item => item.id === id);
-        if (itemIndex === -1) {
-            return null;
-        }
-        this.items[itemIndex] = { id, name, price };
-        return this.items[itemIndex];
-    }
-
-    deleteItem(id: number) {
-        const itemIndex = this.items.findIndex(item => item.id === id);
-        if (itemIndex === -1) {
-            return false;
-        }
-        this.items.splice(itemIndex, 1);
-        return true;
+    async deleteItem(id: number): Promise<boolean> {
+        const repo = this.getRepository(id);
+        const del = repo.deleteItem(id);
+        return del;
     }
 }

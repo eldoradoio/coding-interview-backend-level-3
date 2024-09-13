@@ -1,31 +1,35 @@
+import { DatabaseARepository } from './DatabaseARepository';
+import { DatabaseBRepository } from './DatabaseBRepository';
 export class ItemManager {
-    items = [];
-    currentId = 1;
-    getAllItems() {
-        return this.items;
+    dbARepository = new DatabaseARepository();
+    dbBRepository = new DatabaseBRepository();
+    getRepository(id) {
+        return id % 2 === 0 ? this.dbARepository : this.dbBRepository;
     }
-    getItemById(id) {
-        return this.items.find(item => item.id === id);
+    async getAllItems() {
+        const [itemsA, itemsB] = await Promise.all([
+            this.dbARepository.getAllItems(),
+            this.dbBRepository.getAllItems()
+        ]);
+        return [...itemsA, ...itemsB];
     }
-    createItem(name, price) {
-        const newItem = { id: this.currentId++, name, price };
-        this.items.push(newItem);
-        return newItem;
+    async getItemById(id) {
+        const repo = this.getRepository(id);
+        const item = repo.getItem(id);
+        return item;
     }
-    updateItem(id, name, price) {
-        const itemIndex = this.items.findIndex(item => item.id === id);
-        if (itemIndex === -1) {
-            return null;
-        }
-        this.items[itemIndex] = { id, name, price };
-        return this.items[itemIndex];
+    async createItem(name, price) {
+        const newItem = { id: Date.now(), name, price }; // Generate a unique ID
+        const repo = this.getRepository(newItem.id);
+        return repo.createItem(newItem);
     }
-    deleteItem(id) {
-        const itemIndex = this.items.findIndex(item => item.id === id);
-        if (itemIndex === -1) {
-            return false;
-        }
-        this.items.splice(itemIndex, 1);
-        return true;
+    async updateItem(id, name, price) {
+        const repo = this.getRepository(id);
+        return repo.updateItem(id, name, price);
+    }
+    async deleteItem(id) {
+        const repo = this.getRepository(id);
+        const del = repo.deleteItem(id);
+        return del;
     }
 }

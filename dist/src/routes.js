@@ -48,8 +48,14 @@ export const defineRoutes = (server) => {
                     ]
                 }).code(400);
             }
-            const newItem = itemManager.createItem(name, price);
-            return h.response(newItem).code(201);
+            try {
+                const newItem = await itemManager.createItem(name, price);
+                return h.response(newItem).code(201);
+            }
+            catch (error) {
+                console.error('Error creating item:', error);
+                return h.response({ error: 'Internal Server Error' }).code(500);
+            }
         }
     });
     // Ruta para actualizar un item por su ID
@@ -70,11 +76,17 @@ export const defineRoutes = (server) => {
                     ]
                 }).code(400);
             }
-            const updatedItem = itemManager.updateItem(parseInt(id), name, price);
-            if (!updatedItem) {
-                return h.response({ message: 'Item not found' }).code(404);
+            try {
+                const updatedItem = await itemManager.updateItem(parseInt(id), name, price);
+                if (!updatedItem) {
+                    return h.response({ message: 'Item not found' }).code(404);
+                }
+                return h.response(updatedItem).code(200);
             }
-            return h.response(updatedItem).code(200);
+            catch (error) {
+                console.error('Error updating item:', error);
+                return h.response({ message: 'Internal Server Error' }).code(500);
+            }
         }
     });
     // Ruta para eliminar un item por su ID
@@ -83,11 +95,17 @@ export const defineRoutes = (server) => {
         path: '/items/{id}',
         handler: async (request, h) => {
             const { id } = request.params;
-            const success = itemManager.deleteItem(parseInt(id));
-            if (!success) {
-                return h.response({ message: 'Item not found' }).code(404);
+            try {
+                const success = await itemManager.deleteItem(parseInt(id));
+                if (!success) {
+                    return h.response({ message: 'Item not found' }).code(404);
+                }
+                return h.response().code(204);
             }
-            return h.response().code(204);
+            catch (error) {
+                console.error('Error deleting item:', error);
+                return h.response({ message: 'Internal Server Error' }).code(500);
+            }
         }
     });
 };
