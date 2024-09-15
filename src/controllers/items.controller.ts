@@ -1,8 +1,24 @@
 import { Request, ResponseToolkit } from "@hapi/hapi";
-import { ItemService } from "../service/items.services";
 
+// DTOs
+import { CreateItemDTO } from "../DTOs/createItems.dto";
+import { UpdateItemDTO } from "../DTOs/updateItems.dto";
+
+// Servicios
+import { ItemService } from "../service/items.services";
 const itemService = new ItemService();
 
+
+/**
+ * Controlador para los ítems.
+ * @class
+ * @method listItems - Método para listar todos los ítems.
+ * @method createItem - Método para crear un ítem.
+ * @method getItemById - Método para obtener un ítem por su ID.
+ * @method updateItem - Método para actualizar un ítem.
+ * @method deleteItem - Método para eliminar un ítem.
+ * 
+ */
 export class ItemController {
   // Listar todos los ítems
   async listItems(request: Request, h: ResponseToolkit) {
@@ -10,37 +26,36 @@ export class ItemController {
     return h.response(items).code(200);
   }
 
-  // Crear un nuevo ítem
+  /**
+ * Controlador para crear un ítem.
+ * @param {Request} request - La solicitud HTTP que contiene los datos del ítem.
+ * @param {ResponseToolkit} h - El toolkit de respuesta de Hapi.
+ * @returns {ResponseObject} La respuesta HTTP con el ítem creado y el código de estado 201, o un error y el código de estado 400.
+ */
   async createItem(request: Request, h: ResponseToolkit) {
-    const { name, price } = request.payload as { name: string; price: any };  // Asegurarse de que price se maneja como "any"
+    try {
+      const validatedData = CreateItemDTO.validate(request.payload);
 
-    if (!name || price === undefined) {
-      return h.response({
-        errors: [{ field: "price", message: 'Field "price" is required' }]
-      }).code(400);
+      const newItem = await itemService.createItem(validatedData.name, validatedData.price);
+
+      return h.response(newItem).code(201);
+
+    } catch (error) {
+      return h.response({ errors: error }).code(400);
     }
-
-    // Asegúrate de que el precio es numérico
-    const numericPrice = Number(price);
-    if (isNaN(numericPrice)) {
-      return h.response({
-        errors: [{ field: "price", message: 'Field "price" must be a number' }]
-      }).code(400);
-    }
-
-    if (numericPrice < 0) {
-      return h.response({
-        errors: [{ field: "price", message: 'Field "price" cannot be negative' }]
-      }).code(400);
-    }
-
-    const newItem = await itemService.createItem(name, numericPrice);
-    return h.response(newItem).code(201);
   }
+  
 
-  // Obtener un ítem por ID
+  /**
+   * controlador para obtener un ítem por su ID.
+   * @param {Request} request - La solicitud HTTP que contiene los datos del ítem.
+   * @param {ResponseToolkit} h - El toolkit de respuesta de Hapi.
+   * @returns {ResponseObject} La respuesta HTTP con el ítem encontrado y el código de estado 200, o un mensaje de error y el código de estado 404. 
+   */
   async getItemById(request: Request, h: ResponseToolkit) {
+    
     const { id } = request.params;
+
     const item = await itemService.getItemById(Number(id));
 
     if (!item) {
@@ -50,41 +65,41 @@ export class ItemController {
     return h.response(item).code(200);
   }
 
-  // Actualizar un ítem
+  /**
+   * controlador para actualizar un ítem.
+   * @param {Request} request - La solicitud HTTP que contiene los datos del ítem.
+   * @param {ResponseToolkit} h - El toolkit de respuesta de Hapi.
+   * @returns {ResponseObject} La respuesta HTTP con el ítem actualizado y el código de estado 200, o un mensaje de error y el código de estado 404.
+   */
   async updateItem(request: Request, h: ResponseToolkit) {
-    const { id } = request.params;
-    const { name, price } = request.payload as { name: string; price: any };
-
-    if (!name || price === undefined) {
-      return h.response({
-        errors: [{ field: "price", message: 'Field "price" is required' }]
-      }).code(400);
+    try {
+      const { id } = request.params;
+      
+      
+      const validatedData = UpdateItemDTO.validate(request.payload);
+      
+      
+      const numericPrice = validatedData.price !== undefined ? Number(validatedData.price) : undefined;
+  
+      
+      const updatedItem = await itemService.updateItem(Number(id), validatedData.name, numericPrice || 0);
+  
+      if (!updatedItem) {
+        return h.response({ message: "Item not found" }).code(404);
+      }
+  
+      return h.response(updatedItem).code(200);
+    } catch (error) {
+      return h.response({ errors: error }).code(400); 
     }
-
-    // Asegúrate de que el precio es numérico
-    const numericPrice = Number(price);
-    if (isNaN(numericPrice)) {
-      return h.response({
-        errors: [{ field: "price", message: 'Field "price" must be a number' }]
-      }).code(400);
-    }
-
-    if (numericPrice < 0) {
-      return h.response({
-        errors: [{ field: "price", message: 'Field "price" cannot be negative' }]
-      }).code(400);
-    }
-
-    const updatedItem = await itemService.updateItem(Number(id), name, numericPrice);
-
-    if (!updatedItem) {
-      return h.response({ message: "Item not found" }).code(404);
-    }
-
-    return h.response(updatedItem).code(200);
   }
 
-  // Eliminar un ítem
+  /**
+   * 
+   * @param {Request} request - La solicitud HTTP que contiene los datos del ítem.
+   * @param {ResponseToolkit} h - El toolkit de respuesta de Hapi. 
+   * @returns {ResponseObject} La respuesta HTTP con el código de estado 204 si se eliminó correctamente, o un mensaje de error y el código de estado 404 si no se encontró el ítem.
+   */
   async deleteItem(request: Request, h: ResponseToolkit) {
     const { id } = request.params;
 
@@ -95,6 +110,7 @@ export class ItemController {
     }
 
     await itemService.deleteItem(Number(id));
-    return h.response().code(204); // Respuesta 204 sin contenido
+    return h.response().code(204); 
   }
-}
+  
+};

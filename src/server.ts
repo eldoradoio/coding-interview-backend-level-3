@@ -10,7 +10,7 @@ export const getServer = async () => {
 
   defineRoutes(server);
 
-  // Verifica si ya está inicializada la base de datos
+  
   if (!AppDataSource.isInitialized) {
     try {
       await AppDataSource.initialize();
