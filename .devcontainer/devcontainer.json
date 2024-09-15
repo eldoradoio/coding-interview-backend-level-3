@@ -1,8 +1,17 @@
 // See https://containers.dev/implementors/json_reference/ for configuration reference
 {
 	"name": "Coding Interview Backend Level 3",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
-  "remoteUser": "node"
-}
+	"dockerComposeFile": ["../docker-compose.yml"],
+	"service": "app",
+	"workspaceFolder": "/workspace",
+	"remoteUser": "node",
+	"customizations": {
+	  "vscode": {
+		"settings": {
+		  "terminal.integrated.defaultProfile.linux": "bash"
+		}
+	  }
+	}
+  }
+  
+  
