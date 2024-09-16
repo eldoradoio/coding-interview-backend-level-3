@@ -3,11 +3,15 @@ import {iItem} from "../interface/Items.interface";
 
 
 /**
- * Item Entity
- * @class
- * @property {number} id - El ID del ítem.
- * @property {string} name - El nombre del ítem.
- * @property {number} price - El precio del ítem.
+ * Entidad Item
+ * 
+ * Esta clase representa la entidad de un ítem en la base de datos.
+ * 
+ * @class Item
+ * @implements {iItem}
+ * @property {number} id - Identificador único del ítem, generado automáticamente.
+ * @property {string} name - Nombre del ítem.
+ * @property {number} price - Precio del ítem, almacenado como decimal en la base de datos.
  */
 @Entity()
 export class Item implements iItem {
@@ -19,8 +23,9 @@ export class Item implements iItem {
 
   @Column("decimal", { 
     transformer: { 
-      to: (value: number) => 
-        value, from: (value: string) => 
-          parseFloat(value) } })
+      to: (value: number) => value, 
+      from: (value: string) => parseFloat(value) 
+    } 
+  })
   price: number;
 };
