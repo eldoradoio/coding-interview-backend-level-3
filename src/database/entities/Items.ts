@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import {iItem} from "../interface/Items.interface";
 
 
 /**
@@ -9,7 +10,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
  * @property {number} price - El precio del ítem.
  */
 @Entity()
-export class Item {
+export class Item implements iItem {
   @PrimaryGeneratedColumn()
   id: number;
 
