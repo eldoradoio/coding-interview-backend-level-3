@@ -4,7 +4,12 @@ const Joi = require('joi');
 
 dotenv.config();
 
-
+/**
+ * Esquema de validacion de las variables de entorno.
+ * @const
+ * @type {Joi.ObjectSchema}
+ * 
+ */
 const envSchema = Joi.object({
   DB_HOST: Joi.string().hostname().required().error(new Error("DB_HOST is required")),
   DB_PORT: Joi.number().required().error(new Error("DB_PORT is required")),
@@ -23,7 +28,6 @@ if (error) {
 /**
  * Clase que exporta las variables de entorno de la aplicacion.
  * @class
- * 
  */
 class Config {
   public readonly DB_HOST: string;
