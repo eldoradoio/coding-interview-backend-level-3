@@ -1,86 +1,99 @@
-# Bienvenido al coding-interview-backend-level-3
+# Bienvenido al coding-interview-backend-level-3 (segunda parte)
+
+## Desafío
+
+Crear un PR en el repositorio de la prueba existente (level-3) con el siguiente cambio:
+
+- Los Items pares se guardan en "Servidor de Base de Datos A"
+- Los Items impares se guardan en "Servidor de Base de Datos B".
+- Get Item / Get All, tienen que funcionar como si fuese una sola BD.
+
+Puedes usar tipos de BD distintos o iguales. Lo importante es que se guarden en servidores "fisicamente distintos".
 
 ## Descripción
+
 Este proyecto es una API REST que permite realizar operaciones CRUD sobre una entidad de tipo `Item`.
 
-La entidad tiene 3 campos: `id`, `name` y `price`.
+## Cambios realizados
 
-Tu tarea es completar la implementación de toda la funcionalidad de forma tal de que los tests e2e pasen exitosamente.
+- Se ha implementado una arquitectura de base de datos distribuida utilizando MongoDB.
+- Se utiliza Hapi.js como framework web para la API REST.
+- Se ha configurado Docker Compose para ejecutar dos instancias de MongoDB.
+- Se ha implementado la lógica para distribuir los items entre las dos bases de datos según si su ID es par o impar.
 
-### Que puedes hacer: 
-- ✅ Modificar el código fuente y agregar nuevas clases, métodos, campos, etc.
-- ✅ Cambiar dependencias, agregar nuevas, etc.
-- ✅ Modificar la estructura del proyecto (/src/** es todo tuyo)
-- ✅ Elegir una base de datos
-- ✅ Elegir un framework web
-- ✅ Cambiar la definición del .devContainer
+## Requisitos
 
+- Docker y Docker Compose
+- Node.js (versión 14 o superior)
+- npm
 
-### Que **no** puedes hacer:
-- ❌ No puedes modificar el archivo original /e2e/index.test.ts (pero puedes crear otros e2e test si lo deseas)
-- ❌ El proyecto debe usar Typescript 
-- ❌ Estresarte 🤗
+## Instrucciones de ejecución
 
+1. Instalar dependencias:
 
-## Pasos para comenzar
-1. Haz un fork usando este repositorio como template
-2. Clona el repositorio en tu máquina
-3. Realiza los cambios necesarios para que los tests pasen
-4. Sube tus cambios a tu repositorio
-5. Avísanos que has terminado
-6. ???
-7. PROFIT
+   ```bash
+   npm install
+   ```
 
-### Cualquier duda contactarme a https://www.linkedin.com/in/andreujuan/
---------------
+2. Iniciar las bases de datos MongoDB:
 
-### Instrucciones:
+   ```bash
+   docker-compose up -d
+   ```
 
-**Agregar los archivos .env y .env.test al root!**
+3. Iniciar el servidor:
+   ```bash
+   npm run start
+   ```
 
-`npm i`
+El servidor estará disponible en `http://localhost:3000`.
 
-`npm start` o `npm run dev` para levantar el servidor en caso de querer utilizar postman realizar peticiones a MongoDB
- 
-`npm run test` para correr los tests.
+## Pruebas e interacción con la API
 
-### Changelos:
-1. Estructura del Proyecto
-    * Se agregó una nueva estructura de carpetas bajo src/ siguiendo el patrón de diseño MVC (Model-View-Controller). Esto facilita la organización del código y la separación de responsabilidades.
-    Carpetas añadidas:
-        * controllers/: para manejar la lógica de los controladores.
-        * services/: para la lógica de negocio.
-        * routes/: para la definición de rutas.
-        * config/: para configuraciones, como bases de datos.
-        * mock/: para mocks de datos con faker utilizados en el testing adicional.
-        * middlewares/: para middleware como validaciones y manejo de errores con joi.
-        * models/: para definir los esquemas de MongoDB.
+Para interactuar con la API, puedes utilizar los siguientes comandos curl:
 
-2. Controladores y Servicios
-    * Se crearon los archivos respectivos en cada carpeta para implementar la funcionalidad solicitada.
-        * item.controller.ts: controlador para gestionar las operaciones CRUD de la entidad Item.
-        * item.service.ts: lógica de negocio relacionada con Item.
-        * item.mock.ts: datos mock utilizados en pruebas.
+1. Verificar que el servidor está funcionando:
 
-3. Rutas
-    * Se implementaron rutas adicionales para manejar las operaciones CRUD de Item y las funcionalidades extra solicitadas.
-    * Se añadió un endpoint adicional /items/paginated para simular un paginado de items. Esto permite la recuperación de resultados paginados, usando parámetros como limit, page, y sort.
+   ```bash
+   curl http://localhost:3000/ping
+   ```
 
-4. Base de Datos y Testing
-    * Se integró Mongoose para conectarse a MongoDB.
-    * Para evitar cambios en la base de datos en la nube durante las pruebas, se añadió Mongo Memory Server, permitiendo el testing en una base de datos en memoria.
-    * Se creó el archivo setup.ts para configurar el entorno de testing.
-    * Se añadieron archivos .env y .env.test al root para gestionar variables de entorno.
+2. Crear un nuevo item:
 
-5. Testing
-    * Se creó un archivo de prueba adicional, pagination.test.ts, para realizar pruebas e2e en el endpoint de paginado.
-    * Se implementaron validaciones con Faker para generar datos de prueba y asegurarse de que las paginaciones funcionan correctamente.
+   ```bash
+   curl -X POST -H "Content-Type: application/json" -d '{"id": 1, "name": "Nuevo Item", "price": 9.99}' http://localhost:3000/items
+   ```
 
-6. Dependencias
-    * Se añadieron nuevas dependencias:
-        * Mongoose: Para conectarse a MongoDB.
-        * Mongo Memory Server: Para tests en memoria.
-        * Joi: Para validaciones en los middlewares.
-        * Faker: Para generar datos falsos en los tests.
+3. Obtener todos los items:
 
-### Cualquier duda contactarme a https://www.linkedin.com/in/santiago-seisdedos/ o https://linktr.ee/seisdedos
+   ```bash
+   curl http://localhost:3000/items
+   ```
+
+4. Obtener un item específico (reemplaza {id} con el ID deseado):
+
+   ```bash
+   curl http://localhost:3000/items/{id}
+   ```
+
+## Verificar que los datos se guardan en la base de datos correcta
+
+### En la base de datos A
+
+```bash
+docker exec -it mongodb-a mongosh
+
+use dbA
+
+db.items.find()
+```
+
+### En la base de datos B
+
+```bash
+docker exec -it mongodb-b mongosh
+
+use dbB
+
+db.items.find()
+```

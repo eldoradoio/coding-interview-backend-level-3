@@ -1,12 +1,8 @@
-import { startServer } from "./server";
-
-const start = async () => {
-  await startServer();
-};
+const { startServer } = require("./server");
 
 process.on("unhandledRejection", (err) => {
-  console.log(err);
+  console.error(err);
   process.exit(1);
 });
 
-start();
+startServer();
