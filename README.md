@@ -32,6 +32,7 @@ src/
 ├── database/
 │   ├── data/                    # Contiene los scripts SQL para la inicialización
 │   └── entities/                # Definiciones de las entidades de la base de datos
+│   └── interface/               # Interfaces para las entidades
 ├── server.ts                    # Configura y arranca el servidor Hapi
 └── config.ts 
 ```
