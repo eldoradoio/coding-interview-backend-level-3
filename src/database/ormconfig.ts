@@ -2,7 +2,6 @@ import { DataSource } from 'typeorm';
 import { Item } from './entities/Items'; 
 import { config } from '../config';
 
-console.log('config', config);
 
 /**
  * Clase para la conexión a la base de datos.
