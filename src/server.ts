@@ -1,5 +1,6 @@
 import Hapi from "@hapi/hapi";
-import { defineRoutes } from "./routes";
+
+import {registerRoutes} from "./routes/index"   
 import { AppDataSource } from "./database/ormconfig";
 
 export const getServer = async () => {
@@ -8,7 +9,8 @@ export const getServer = async () => {
     port: 3000,
   });
 
-  defineRoutes(server);
+  //registro de todas las rutas
+  registerRoutes(server);
 
   
   if (!AppDataSource.isInitialized) {

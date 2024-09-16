@@ -1,5 +1,5 @@
 import { Server } from "@hapi/hapi";
-import { ItemController } from "./controllers/items.controller";
+import { ItemController } from "../controllers/items.controller";
 
 const itemController = new ItemController();
 
@@ -7,7 +7,7 @@ const itemController = new ItemController();
  * Define todas las rutas del servidor.
  * @param {Server} server - El servidor de Hapi.
  */
-export const defineRoutes = (server: Server) => {
+export const itemRoutes = (server: Server) => {
   /**
    * Ruta de ping para comprobar el estado del servidor.
    * @method GET

@@ -21,15 +21,19 @@ El proyecto sigue una **arquitectura de capas**, que divide las responsabilidade
 ```bash
 src/
 ├── controllers/
-│   └── items.controller.ts # Controla las operaciones relacionadas a los Items
+│   └── items.controller.ts      # Controla las operaciones relacionadas a los Items
+│   └── users.controller.ts      # Controla las operaciones relacionadas a los Usuarios (si se añade)
 ├── services/
-│   └── items.services.ts # Contiene la lógica de negocio y conexión con la base de datos
-├── routes.ts # Define las rutas para los endpoints
+│   └── items.services.ts        # Contiene la lógica de negocio y conexión con la base de datos para Items
+│   └── users.services.ts        # Contiene la lógica de negocio y conexión con la base de datos para Usuarios (si se añade)
+├── routes/
+│   ├── items.routes.ts          # Define las rutas para los endpoints de Items  
+│   └── index.ts                 # Importa y registra todas las rutas
 ├── database/
-│   ├── data/ # Contiene los scripts SQL para la inicialización
-│   └── entities/ # Definiciones de las entidades de la base de datos
-├── server.ts # Configura y arranca el servidor Hapi
-└── config.ts # Carga y valida las variables de entorno
+│   ├── data/                    # Contiene los scripts SQL para la inicialización
+│   └── entities/                # Definiciones de las entidades de la base de datos
+├── server.ts                    # Configura y arranca el servidor Hapi
+└── config.ts 
 ```
 
 ### Arquitectura Basada en Capas
