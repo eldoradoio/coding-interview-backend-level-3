@@ -1,107 +1,126 @@
-# Coding Interview Backend Level 3 - REST API
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Changelog - Implementación de dos servidores</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 20px;
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    h1 {
+      border-bottom: 2px solid #2980b9;
+      padding-bottom: 10px;
+    }
+    code {
+      background-color: #000;
+      color: #00ff00;
+      padding: 5px;
+      border-radius: 5px;
+    }
+    pre {
+      background-color: #000;
+      color: #00ff00;
+      padding: 10px;
+      border-left: 5px solid #00ff00;
+      overflow-x: auto;
+    }
+    ul {
+      margin: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Changelog</h1>
 
-## Descripción
+  <h2>Actualización - Implementación de dos servidores de base de datos (17 de Septiembre de 2024)</h2>
 
-Este proyecto es una API RESTful desarrollada para realizar operaciones CRUD sobre una entidad llamada `Item`. **Me enfoque en mantener una estructura simple y funcional** que se alinee con las necesidades de los tests E2E proporcionados, evitando el uso de frameworks más pesados como Nest.js, que no se justificaba para este nivel de complejidad.
+  <h3>Contexto</h3>
+  <p>En esta actualización, se implementaron cambios significativos en la lógica de la aplicación para distribuir la información de los items en dos servidores de bases de datos diferentes, cumpliendo con los siguientes requisitos:</p>
+  <ul>
+    <li>Los items con IDs pares se almacenan en el <strong>Servidor de Base de Datos A</strong>.</li>
+    <li>Los items con IDs impares se almacenan en el <strong>Servidor de Base de Datos B</strong>.</li>
+    <li>Las operaciones de <code>Get Item</code> y <code>Get All</code> deben funcionar de forma transparente para el usuario, como si la aplicación estuviese conectada a una sola base de datos.</li>
+  </ul>
 
-## Tecnologías Utilizadas
+  <h3>Implementación</h3>
 
-- **TypeScript**: Utilice TypeScript para asegurar un código tipado, robusto y escalable.
-- **Hapi.js**: Opte por Hapi.js, un framework ligero y flexible para la creación de servidores, que ofrece una excelente integración con TypeScript.
-- **TypeORM**: Para manejar las operaciones de base de datos, use TypeORM como mi ORM, lo que me permitió mapear entidades a tablas y manejar las relaciones de forma sencilla.
-- **PostgreSQL**: Base de datos relacional que proporciona estabilidad y fiabilidad para las operaciones CRUD.
-- **Joi**: Para validar las entradas de datos, use Joi, una biblioteca poderosa que me permitio implementar **DTOs** (Data Transfer Objects) para mantener la seguridad de las entradas y salidas.
-- **Docker**: Todo el entorno se maneja con Docker para facilitar la replicación y el despliegue. Utilice contenedores para la base de datos PostgreSQL y el servidor de la API.
-- **Jest**: Para realizar los tests E2E, me apoye en Jest, validando que todos los endpoints cumplan con las expectativas proporcionadas por el enunciado.
+  <h4>Base de Datos</h4>
+  <ul>
+    <li><strong>Servidor A</strong>: PostgreSQL se utiliza como la base de datos en el <strong>Servidor A</strong>.</li>
+    <li><strong>Servidor B</strong>: MariaDB se utiliza en el <strong>Servidor B</strong>, cumpliendo con la condición de servidores "físicamente distintos" y trabajando con diferentes tipos de bases de datos.</li>
+    <li><strong>Redis</strong>: Redis se utiliza como un sistema de almacenamiento en memoria para gestionar estados temporales del sistema, como el contador de IDs. Esto permite realizar operaciones rápidas y eficientes.</li>
+  </ul>
 
-## Estructura del Proyecto
+  <h4>Cambios en el Código</h4>
+  <ul>
+    <li>Se crearon dos conexiones distintas utilizando <strong>TypeORM</strong>, una para cada base de datos, configuradas en el archivo <code>ormconfig.ts</code>.</li>
+    <li>La lógica de almacenamiento de items fue modificada para insertar items en la base de datos correspondiente (A o B) dependiendo de si el ID es par o impar.</li>
+    <li>La operación <code>Get All</code> combina los items obtenidos de ambas bases de datos en un solo resultado, manteniendo la transparencia hacia el usuario.</li>
+  </ul>
 
-El proyecto sigue una **arquitectura de capas**, que divide las responsabilidades y facilita la escalabilidad:
+  <h4>Mejoras Técnicas</h4>
+  <p>Se utilizó la función <code>Promise.all()</code> para realizar consultas a ambas bases de datos simultáneamente, mejorando la eficiencia.</p>
 
-```bash
-src/
-├── controllers/
-│   └── items.controller.ts      # Controla las operaciones relacionadas a los Items
-│   └── users.controller.ts      # Controla las operaciones relacionadas a los Usuarios (si se añade)
-├── services/
-│   └── items.services.ts        # Contiene la lógica de negocio y conexión con la base de datos para Items
-│   └── users.services.ts        # Contiene la lógica de negocio y conexión con la base de datos para Usuarios (si se añade)
-├── routes/
-│   ├── items.routes.ts          # Define las rutas para los endpoints de Items  
-│   └── index.ts                 # Importa y registra todas las rutas
-├── database/
-│   ├── data/                    # Contiene los scripts SQL para la inicialización
-│   └── entities/                # Definiciones de las entidades de la base de datos
-│   └── interface/               # Interfaces para las entidades
-├── server.ts                    # Configura y arranca el servidor Hapi
-└── config.ts 
-```
+  <h3>Arquitectura del Código</h3>
+  <ul>
+    <li><strong>Rutas</strong>: Se definieron claramente las rutas existentes y hacia qué controladores apuntan.</li>
+    <li><strong>Controllers</strong>: Reciben las peticiones y manejan las respuestas, delegando la lógica de negocio a los servicios.</li>
+    <li><strong>Services</strong>: Residen toda la lógica de negocio y las interacciones con la base de datos, manteniendo el controlador enfocado en las respuestas HTTP.</li>
+  </ul>
 
-### Arquitectura Basada en Capas
-
-1. **Routes**: Define los endpoints expuestos de la API, estableciendo qué rutas existen y hacia qué controladores apuntan.
-2. **Controllers**: Son responsables de recibir las peticiones y manejar las respuestas, delegando la lógica de negocio a los servicios.
-3. **Services**: Aquí reside toda la lógica de negocio y las interacciones con la base de datos. Se asegura la separación de responsabilidades, manteniendo el controlador limpio y enfocado en las respuestas HTTP.
-
-### DTOs y Validaciones
-
-implemente **DTOs (Data Transfer Objects)** utilizando Joi para validar la entrada de datos. Esto asegura que los datos recibidos estén correctos antes de ser procesados por los servicios.
-
-```typescript
-const CreateItemDTO = Joi.object({
+  <h3>DTOs y Validaciones</h3>
+  <p>Se implementaron <strong>DTOs (Data Transfer Objects)</strong> utilizando Joi para validar la entrada de datos. Esto asegura que los datos recibidos estén correctos antes de ser procesados.</p>
+  <pre><code>const CreateItemDTO = Joi.object({
   name: Joi.string().required().messages({
-    'string.empty': 'Field "name" is required',
+    'string.empty': 'El campo "name" es requerido',
   }),
   price: Joi.number().min(0).required().messages({
-    'number.min': 'Field "price" cannot be negative',
-    'any.required': 'Field "price" is required',
+    'number.min': 'El campo "price" no puede ser negativo',
+    'any.required': 'El campo "price" es requerido',
   }),
 });
-```
+  </code></pre>
 
+  <h2>Instalación y Ejecución</h2>
 
-### Instalación y Ejecución
+  <h3>Requisitos:</h3>
+  <ul>
+    <li>Docker y Docker Compose</li>
+    <li>Node.js</li>
+    <li>PostgreSQL</li>
+  </ul>
 
-#### Requisitos:
-- Docker y Docker Compose
-- Node.js
-- PostgreSQL
-
-#### Pasos para ejecutar el proyecto:
-1. Clonar el repositorio:
-bash
-```bash
-git clone git@github.com:aragornz325/coding-interview-backend-level-3.git
-```
-
-2. Configurar el entorno: Crear un archivo .env basado en las variables de entorno necesarias para conectar la base de datos.
-    Esto no es estrictamente necesario dado que con la configuracion actual toma las variables del docker-compose
-
-```bash
-DB_HOST=db
+  <h3>Pasos para ejecutar el proyecto:</h3>
+  <ol>
+    <li>Clonar el repositorio:
+      <pre><code>git clone git@github.com:aragornz325/coding-interview-backend-level-3.git</code></pre>
+    </li>
+    <li>Configurar el entorno:
+      <p>Crear un archivo .env con las variables necesarias para conectar la base de datos.</p>
+      <pre><code>DB_HOST=db
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=password
-DB_NAME=mydatabase
-```
+DB_NAME=mydatabase</code></pre>
+    </li>
+    <li>Instalar las dependencias con npm:
+      <pre><code>npm install</code></pre>
+    </li>
+    <li>Iniciar los contenedores de Docker:
+      <pre><code>docker-compose up --build</code></pre>
+    </li>
+    <li>Ejecutar los tests:
+      <pre><code>npm run test</code></pre>
+    </li>
+  </ol>
 
-3. Instalar las dependencias con npm:
-
-```bash
-npm install
-```
-
-4. Iniciar los contenedores de Docker:
-
-```bash
-docker-compose up --build
-```
-
-5. Ejecutar los tests:
-
-```bash
-npm run test
-```
-
-### Enfoque Simple pero Eficiente
-Opte por no usar Nest.js porque queria un enfoque minimalista y directo, adecuado para las necesidades del test. Hapi.js me permitió construir una API sólida con TypeScript sin agregar una sobrecarga innecesaria.
+  <h2>Enfoque Simple pero Eficiente</h2>
+  <p>Opté por no usar Nest.js, ya que quería un enfoque minimalista y directo. Hapi.js me permitió construir una API sólida con TypeScript sin agregar sobrecarga innecesaria.</p>
+</body>
+</html>

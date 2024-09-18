@@ -1,19 +1,36 @@
 import * as dotenv from 'dotenv';
+import * as Joi from 'joi';
 
 dotenv.config();
 
+/**
+ * Esquema de validación de las variables de entorno
+ */
+const envSchema = Joi.object({
+  DB_HOST_A: Joi.string().required(),
+  DB_PORT_A: Joi.number().port().required(),
+  DB_USER_A: Joi.string().required(),
+  DB_PASSWORD_A: Joi.string().required(),
+  DB_NAME_A: Joi.string().required(),
+
+  DB_HOST_B: Joi.string().required(),
+  DB_PORT_B: Joi.number().port().required(),
+  DB_USER_B: Joi.string().required(),
+  DB_PASSWORD_B: Joi.string().required(),
+  DB_NAME_B: Joi.string().required(),
+
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.number().port().required(),
+  REDIS_TIMEOUT: Joi.number().required()
+}).unknown(true); 
 
 /**
- * Función para validar que una variable de entorno esté presente.
- * @param {string} name - Nombre de la variable de entorno.
- * @throws {Error} Si la variable de entorno no está definida.
+ * Validar las variables de entorno.
  */
-function validateEnvVar(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`La variable de entorno ${name} es obligatoria y no está definida.`);
-  }
-  return value;
+const { error, value: envVars } = envSchema.validate(process.env, { abortEarly: false });
+
+if (error) {
+  throw new Error(`Error de validación en las variables de entorno: ${error.message}`);
 }
 
 /**
@@ -40,24 +57,24 @@ class Config {
   public readonly REDIS_TIMEOUT: number;
 
   constructor() {
-    // Validación y asignación para la base de datos A
-    this.DB_HOST_A = validateEnvVar('DB_HOST_A');
-    this.DB_PORT_A = parseInt(validateEnvVar('DB_PORT_A'), 10);
-    this.DB_USER_A = validateEnvVar('DB_USER_A');
-    this.DB_PASSWORD_A = validateEnvVar('DB_PASSWORD_A');
-    this.DB_NAME_A = validateEnvVar('DB_NAME_A');
+    // Asignación para la base de datos A
+    this.DB_HOST_A = envVars.DB_HOST_A;
+    this.DB_PORT_A = envVars.DB_PORT_A;
+    this.DB_USER_A = envVars.DB_USER_A;
+    this.DB_PASSWORD_A = envVars.DB_PASSWORD_A;
+    this.DB_NAME_A = envVars.DB_NAME_A;
 
-    // Validación y asignación para la base de datos B
-    this.DB_HOST_B = validateEnvVar('DB_HOST_B');
-    this.DB_PORT_B = parseInt(validateEnvVar('DB_PORT_B'), 10);
-    this.DB_USER_B = validateEnvVar('DB_USER_B');
-    this.DB_PASSWORD_B = validateEnvVar('DB_PASSWORD_B');
-    this.DB_NAME_B = validateEnvVar('DB_NAME_B');
+    // Asignación para la base de datos B
+    this.DB_HOST_B = envVars.DB_HOST_B;
+    this.DB_PORT_B = envVars.DB_PORT_B;
+    this.DB_USER_B = envVars.DB_USER_B;
+    this.DB_PASSWORD_B = envVars.DB_PASSWORD_B;
+    this.DB_NAME_B = envVars.DB_NAME_B;
 
-    // Validación y asignación para redis
-    this.REDIS_HOST = validateEnvVar('REDIS_HOST');  // IP o nombre de host del servicio Redis en Docker
-    this.REDIS_PORT =  parseInt(validateEnvVar('REDIS_PORT'), 10)  // Puerto de Redis
-    this.REDIS_TIMEOUT = parseInt(validateEnvVar('REDIS_TIMEOUT'), 10)  //
+    // Asignación para Redis
+    this.REDIS_HOST = envVars.REDIS_HOST;
+    this.REDIS_PORT = envVars.REDIS_PORT;
+    this.REDIS_TIMEOUT = envVars.REDIS_TIMEOUT;
   }
 }
 
