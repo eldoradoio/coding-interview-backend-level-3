@@ -1,6 +1,8 @@
-import Redis from 'ioredis';
+// conecciones a bases de datos A y B
 import { AppDataSourceA, AppDataSourceB } from "../database/ormconfig";
+// entidades
 import { Item } from "../database/entities/Items";
+// cliente redis
 import redis from '../database/redis';
 
 
