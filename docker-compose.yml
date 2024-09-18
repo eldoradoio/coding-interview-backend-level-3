@@ -8,31 +8,76 @@ services:
       - .:/workspace
     ports:
       - "3000:3000"
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: password
-      DB_NAME: mydatabase
+    env_file:
+      - .env # Archivo de variables de entorno, no las defino mas en el docker-compose.yml, se cargan desde .env
     depends_on:
-      - db
+      - db_a
+      - db_b
+      - redis
+    networks:
+      el_dorado:
+        ipv4_address: 172.35.0.4
 
-  db:
+  db_a:
     image: postgres:13
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
+      POSTGRES_USER: postgres_a
+      POSTGRES_PASSWORD: password_a
+      POSTGRES_DB: mydatabase_a
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./src/database/data/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pgdata_a:/var/lib/postgresql/data
+      - ./src/database/data/init_a.sql:/docker-entrypoint-initdb.d/init_a.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres_a -d mydatabase_a"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      el_dorado:
+        ipv4_address: 172.35.0.2
+
+  db_b:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password_b
+      MYSQL_DATABASE: mydatabase_b
+      MYSQL_USER: mariadb_user
+      MYSQL_PASSWORD: mariadb_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - pgdata_b:/var/lib/mysql
+      - ./src/database/data/init_b.sql:/docker-entrypoint-initdb.d/init_b.sql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      el_dorado:
+        ipv4_address: 172.35.0.3
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data  # Persistencia de datos
+    command: ["redis-server", "--appendonly", "yes"]  # Levanta la persistencia al iniciar
+    networks:
+      el_dorado:
+        ipv4_address: 172.35.0.5
+
+networks:
+  el_dorado:  # se define network para asignar ip fija a cada contenedor y evitar conflictos
+    driver: bridge # driver de red
+    ipam:
+      config:
+        - subnet: 172.35.0.0/16
 
 volumes:
-  pgdata:
+  pgdata_a:
+  pgdata_b:
+  redisdata:

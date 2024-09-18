@@ -1,7 +1,9 @@
 import Hapi from "@hapi/hapi";
-
-import {registerRoutes} from "./routes/index"   
-import { AppDataSource } from "./database/ormconfig";
+import { registerRoutes } from "./routes/index";
+// Import de ambas fuentes de datos   
+import { AppDataSourceA, AppDataSourceB } from "./database/ormconfig"; 
+// impoer de redis e inicializacion
+import "./database/redis";
 
 export const getServer = async () => {
   const server = Hapi.server({
@@ -9,20 +11,31 @@ export const getServer = async () => {
     port: 3000,
   });
 
-  //registro de todas las rutas
+  // Registro de todas las rutas
   registerRoutes(server);
-
   
-  if (!AppDataSource.isInitialized) {
+  // Inicializa DataSource A
+  if (!AppDataSourceA.isInitialized) {
     try {
-      await AppDataSource.initialize();
-      console.log("Data Source has been initialized!");
+      await AppDataSourceA.initialize();
+      console.log("Data Source A has been initialized!");
     } catch (error) {
-      console.error("Error during Data Source initialization:", error);
+      console.error("Error during Data Source A initialization:", error);
       process.exit(1);
     }
   }
 
+  // Inicializa DataSource B
+  if (!AppDataSourceB.isInitialized) {
+    try {
+      await AppDataSourceB.initialize();
+      console.log("Data Source B has been initialized!");
+    } catch (error) {
+      console.error("Error during Data Source B initialization:", error);
+      process.exit(1);
+    }
+  }
+ 
   return server;
 };
 
