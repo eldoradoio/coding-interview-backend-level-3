@@ -1,16 +1,22 @@
-import dotenv from "dotenv";
 import mongoose from "mongoose";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-export const connectDatabase = async () => {
-  if (mongoose.connection.readyState === 0) {
-    try {
-      await mongoose.connect(process.env.MONGODB_URI as string);
-      console.log("Connected to MongoDB");
-    } catch (error) {
-      console.error("MongoDB connection error:", error);
-      process.exit(1);
-    }
+const MONGO_URI_A =
+  process.env.MONGO_URI_A || "mongodb://localhost:27017/items_a";
+const MONGO_URI_B =
+  process.env.MONGO_URI_B || "mongodb://localhost:27018/items_b";
+
+export const connectToDatabase = async () => {
+  try {
+    const dbA = await mongoose.createConnection(MONGO_URI_A);
+    const dbB = await mongoose.createConnection(MONGO_URI_B);
+
+    console.log("Connected to both databases");
+    return { dbA, dbB };
+  } catch (error) {
+    console.error("Error connecting to databases:", error);
+    process.exit(1);
   }
 };

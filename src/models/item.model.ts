@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Connection } from "mongoose";
 
 export interface IItem extends Document {
   id: number;
@@ -22,7 +22,7 @@ const ItemSchema: Schema = new Schema(
   }
 );
 
-export const Item = mongoose.model<IItem>("Item", ItemSchema);
+export const createItemModel = (connection: Connection) => connection.model<IItem>('Item', ItemSchema);
 
 interface ICounter extends Document {
   _id: string;
@@ -34,15 +34,17 @@ const CounterSchema: Schema = new Schema({
   seq: { type: Number, default: 0 },
 });
 
-const Counter = mongoose.model<ICounter>("Counter", CounterSchema);
+export const createCounterModel = (connection: Connection) => connection.model<ICounter>("Counter", CounterSchema);
 
-export async function getNextSequence(name: string): Promise<number> {
+export async function getNextSequence(name: string, connection: Connection): Promise<number> {
+  console.log("11");
+  const Counter = createCounterModel(connection);
   const counter = await Counter.findByIdAndUpdate(
     name,
     { $inc: { seq: 1 } },
     { new: true, upsert: true }
   );
-
+  console.log("12", counter);
   if (!counter) {
     throw new Error("Failed to generate sequence");
   }

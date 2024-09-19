@@ -1,17 +1,16 @@
 import { Request, ResponseToolkit } from "@hapi/hapi";
 import { ItemService } from "../services/item.service";
 
-const itemService = new ItemService();
-
 export class ItemController {
+  constructor(private itemService: ItemService) {}
   async getAllItems(request: Request, h: ResponseToolkit) {
-    const items = await itemService.getAllItems();
+    const items = await this.itemService.getAllItems();
     return h.response(items).code(200);
   }
 
   async getItemById(request: Request, h: ResponseToolkit) {
     const { id } = request.params;
-    const item = await itemService.getItemById(id);
+    const item = await this.itemService.getItemById(id);
     if (!item) {
       return h.response().code(404);
     }
@@ -27,7 +26,7 @@ export class ItemController {
         order: "asc" | "desc";
       };
 
-      const items = await itemService.getItemsPaginated(
+      const items = await this.itemService.getItemsPaginated(
         page,
         limit,
         sort,
@@ -41,15 +40,18 @@ export class ItemController {
   }
 
   async createItem(request: Request, h: ResponseToolkit) {
+    console.log("03");
     const { name, price } = request.payload as any;
-    const newItem = await itemService.createItem(name, price);
+    console.log("04", name, price);
+    const newItem = await this.itemService.createItem(name, price);
+    console.log("05", newItem);
     return h.response(newItem).code(201);
   }
 
   async updateItem(request: Request, h: ResponseToolkit) {
     const id = parseInt(request.params.id);
     const { name, price } = request.payload as any;
-    const updatedItem = await itemService.updateItem(id, name, price);
+    const updatedItem = await this.itemService.updateItem(id, name, price);
     if (!updatedItem) {
       return h.response().code(404);
     }
@@ -58,7 +60,7 @@ export class ItemController {
 
   async deleteItem(request: Request, h: ResponseToolkit) {
     const id = parseInt(request.params.id);
-    const deleted = await itemService.deleteItem(id);
+    const deleted = await this.itemService.deleteItem(id);
     if (!deleted) {
       return h.response().code(404);
     }

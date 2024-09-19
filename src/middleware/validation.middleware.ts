@@ -11,6 +11,7 @@ const itemSchema = Joi.object({
 });
 
 export const validateItem = (request: Request, h: ResponseToolkit) => {
+  console.log("01");
   const { error } = itemSchema.validate(request.payload, { abortEarly: false });
   if (error) {
     const errors = error.details.map((detail) => ({
@@ -19,6 +20,7 @@ export const validateItem = (request: Request, h: ResponseToolkit) => {
     }));
     return h.response({ errors }).code(400).takeover();
   }
+  console.log("02");
   return h.continue;
 };
 

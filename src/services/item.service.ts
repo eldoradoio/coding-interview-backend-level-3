@@ -1,12 +1,36 @@
-import { Item, IItem, getNextSequence } from "../models/item.model";
+import { IItem, getNextSequence } from "../models/item.model";
+import { ItemRepository } from "../repositories/item.repository";
+import mongoose from "mongoose";
 
 export class ItemService {
+  constructor(
+    private repositoryA: ItemRepository,
+    private repositoryB: ItemRepository,
+    private connectionA: mongoose.Connection,
+    private connectionB: mongoose.Connection
+  ) {}
+
+  private getRepository(id: number): { repository: ItemRepository; connection: mongoose.Connection } {
+    return id % 2 === 0 
+      ? { repository: this.repositoryA, connection: this.connectionA }
+      : { repository: this.repositoryB, connection: this.connectionB };
+  }
+
   async getAllItems(): Promise<IItem[]> {
-    return Item.find().select("-_id -__v").lean();
+    const itemsA = await this.repositoryA.findAll();
+    const itemsB = await this.repositoryB.findAll();
+    // return [...itemsA, ...itemsB].sort((a, b) => a.id - b.id);
+    return [...itemsA, ...itemsB];
   }
 
   async getItemById(id: number): Promise<IItem | null> {
-    return Item.findOne({ id }).select("-_id -__v").lean();
+    try { 
+      console.log("13");
+      return await this.getRepository(id).repository.findById(id);
+    } catch (error) {
+      console.error(`Error fetching item with id ${id}:`, error);
+      throw new Error("Failed to fetch item");
+    }
   }
 
   async getItemsPaginated(
@@ -27,23 +51,23 @@ export class ItemService {
     try {
       const pageNum = Math.max(1, Number(page));
       const limitNum = Math.min(25, Math.max(1, Number(limit)));
-
       const skip = (pageNum - 1) * limitNum;
-
       const validSortFields = ["id", "name", "price"];
       const sortField = validSortFields.includes(sort) ? sort : "id";
 
-      const totalItems = await Item.countDocuments();
+      const [itemsA, itemsB, countA, countB] = await Promise.all([
+        this.repositoryA.findPaginated(skip, limitNum, sortField, order),
+        this.repositoryB.findPaginated(skip, limitNum, sortField, order),
+        this.repositoryA.count(),
+        this.repositoryB.count()
+      ]);
 
-      const items = await Item.find()
-        .sort({ [sortField]: order })
-        .skip(skip)
-        .limit(limitNum)
-        .select("-_id -__v")
-        .lean();
+      const items = [...itemsA, ...itemsB].sort((a, b) => 
+        order === "asc" ? a[sortField as keyof IItem] - b[sortField as keyof IItem] : b[sortField as keyof IItem] - a[sortField as keyof IItem]
+      ).slice(0, limitNum);
 
+      const totalItems = countA + countB;
       const totalPages = Math.ceil(totalItems / limitNum);
-
       const hasNextPage = pageNum < totalPages;
       const hasPreviousPage = pageNum > 1;
 
@@ -64,15 +88,26 @@ export class ItemService {
   }
 
   async createItem(name: string, price: number): Promise<IItem> {
-    const id = await getNextSequence("itemId");
-    const newItem = new Item({ id, name, price });
-    await newItem.save();
-    return newItem.toObject({
-      versionKey: false,
-      transform: (doc, ret) => {
-        delete ret._id;
-      },
-    });
+    console.log("06");
+    let id: number;
+    let retries = 0;
+    const maxRetries = 3;
+ 
+    while (retries < maxRetries) {
+      id = await getNextSequence("itemId", this.connectionA); // Usamos connectionA para la secuencia
+      console.log("07", id);
+      const existingItem = await this.getItemById(id);
+      console.log("08", existingItem);
+      if (!existingItem) {
+        console.log("09");
+        const { repository } = this.getRepository(id);
+        return repository.create({ id, name, price } as IItem);
+      }
+      retries++;
+      console.log("10", retries);
+    }
+
+    throw new Error("Failed to generate a unique ID after multiple attempts");
   }
 
   async updateItem(
@@ -80,18 +115,10 @@ export class ItemService {
     name: string,
     price: number
   ): Promise<IItem | null> {
-    const updatedItem = await Item.findOneAndUpdate(
-      { id },
-      { name, price },
-      { new: true }
-    )
-      .select("-_id -__v")
-      .lean();
-    return updatedItem;
+    return this.getRepository(id).repository.update(id, { name, price });
   }
 
   async deleteItem(id: number): Promise<boolean> {
-    const result = await Item.deleteOne({ id });
-    return result.deletedCount > 0;
+    return this.getRepository(id).repository.delete(id);
   }
 }

@@ -1,24 +1,24 @@
 import Hapi from "@hapi/hapi";
-import { connectDatabase } from "./config/database";
 import { itemRoutes } from "./routes/item.routes";
+import { connectToDatabase } from "./config/database";
+import { ItemRepository } from "./repositories/item.repository";
+import { ItemService } from "./services/item.service";
+import { ItemController } from "./controllers/item.controller";
 
 export const initializeServer = async () => {
+  const { dbA, dbB } = await connectToDatabase();
+
+  const itemRepositoryA = new ItemRepository(dbA);
+  const itemRepositoryB = new ItemRepository(dbB);
+  const itemService = new ItemService(itemRepositoryA, itemRepositoryB, dbA, dbB);
+  const itemController = new ItemController(itemService);
+
   const server = Hapi.server({
     port: process.env.PORT || 3000,
-    host: "localhost",
+    host: "0.0.0.0",
   });
 
-  await connectDatabase();
-
-  server.route({
-    method: "GET",
-    path: "/ping",
-    handler: (request, h) => {
-      return h.response({ ok: true }).code(200);
-    },
-  });
-
-  itemRoutes(server);
+  itemRoutes(server, itemController);
 
   return server;
 };

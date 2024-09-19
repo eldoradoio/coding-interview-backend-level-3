@@ -5,24 +5,29 @@ import {
   validateQueryParams,
 } from "../middleware/validation.middleware";
 
-const itemController = new ItemController();
-
-export const itemRoutes = (server: Server) => {
+export const itemRoutes = (server: Server, itemController: ItemController) => {
   server.route([
     {
       method: "GET",
+      path: "/ping",
+      handler: (request, h) => {
+        return h.response({ ok: true }).code(200);
+      },
+    },
+    {
+      method: "GET",
       path: "/items",
-      handler: itemController.getAllItems,
+      handler: itemController.getAllItems.bind(itemController),
     },
     {
       method: "GET",
       path: "/items/{id}",
-      handler: itemController.getItemById,
+      handler: itemController.getItemById.bind(itemController),
     },
     {
       method: "GET",
       path: "/items/paginated",
-      handler: itemController.getItemsPaginated,
+      handler: itemController.getItemsPaginated.bind(itemController),
       options: {
         pre: [validateQueryParams],
       },
@@ -30,7 +35,7 @@ export const itemRoutes = (server: Server) => {
     {
       method: "POST",
       path: "/items",
-      handler: itemController.createItem,
+      handler: itemController.createItem.bind(itemController),
       options: {
         pre: [{ method: validateItem }],
       },
@@ -38,7 +43,7 @@ export const itemRoutes = (server: Server) => {
     {
       method: "PUT",
       path: "/items/{id}",
-      handler: itemController.updateItem,
+      handler: itemController.updateItem.bind(itemController),
       options: {
         pre: [{ method: validateItem }],
       },
@@ -46,7 +51,7 @@ export const itemRoutes = (server: Server) => {
     {
       method: "DELETE",
       path: "/items/{id}",
-      handler: itemController.deleteItem,
+      handler: itemController.deleteItem.bind(itemController),
     },
   ]);
 };
