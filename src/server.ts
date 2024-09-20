@@ -13,17 +13,24 @@ const getServer = () => {
     return server
 }
 
-export const initializeServer = async () => {
-    await AppDataSource.initialize()
+export const initializeServer = async (start=false) => {
+    if(!AppDataSource.isInitialized){
+        await AppDataSource.initialize()
+    }
     const server = getServer()
-    await server.initialize()
+    if(start){
+        await server.start()
+        console.log(`Server running on ${server.info.uri}`)
+    }else{
+         await server.initialize()
+    }
     return server
 }
 
 export const startServer = async () => {
-    await AppDataSource.initialize()
-    const server = getServer()
-    await server.start()
-    console.log(`Server running on ${server.info.uri}`)
-    return server
+    return initializeServer(true)
 };
+
+export const initializeServerForTests = async () =>{
+    return initializeServer(false);
+}
