@@ -1,7 +1,11 @@
 import * as dotenv from 'dotenv';
 import * as joi from 'joi';
+import { Dbconfig } from './interfaces/db.interfaces';
 
-dotenv.config();
+
+dotenv.config({
+    path: process.env.NODE_ENV === 'test' ? '.env.test' : process.env.NODE_ENV === 'production' ? '.env.prod' : '.env'
+});
 
 const envSchema = joi.object({
     NODE_ENV: joi.string().valid('development', 'test', 'production').default('development'),
@@ -22,8 +26,11 @@ const { value: envVars, error } = envSchema.validate(process.env);
 if (error) {
     throw new Error(`Config validation error: ${error.message}`);
 }
-
-export const config = {
+interface AppConfig {
+    env: string;
+    db: Dbconfig;
+  }
+export const config: AppConfig = {
     env: envVars.NODE_ENV,
     db: {
         type: envVars.NODE_ENV === 'test' && envVars.TEST_DB_NAME === ':memory:' ? 'sqlite' : 'postgres',
