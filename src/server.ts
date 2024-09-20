@@ -1,11 +1,12 @@
 import Hapi from '@hapi/hapi'
 import { defineRoutes } from './routes'
 import { AppDataSource } from './config/database/ormconfig'
+import { config } from './config/config'
 
 const getServer = () => {
     const server = Hapi.server({
         host: 'localhost',
-        port: 3000,
+        port: config.portMs,
     })
 
     defineRoutes(server)
