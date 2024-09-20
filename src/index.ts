@@ -1,4 +1,4 @@
-import { initializeServer, startServer } from "./server"
+import { startServer } from "./server"
 
 process.on('unhandledRejection', (err) => {
     console.error(err)
