@@ -7,8 +7,11 @@ export class CreateItemUseCase {
 
   async execute(name: string, price: number): Promise<Item> {
     if (price < 0) {
-      throw new AppError("Price cannot be negative", 400);
+      throw new AppError('Field "price" cannot be negative', 400);
     }
+    if (price === undefined || price === null) {
+        throw new AppError('Field "price" is required', 400);
+      }
     try {
       const newItem = new Item();
       newItem.name = name;
@@ -16,7 +19,7 @@ export class CreateItemUseCase {
 
       return await this.itemRepository.save(newItem);
     } catch (error) {
-      throw new AppError("Failed to create item", 500);
+      throw new AppError("Failed to create item", 404);
     }
   }
 }
