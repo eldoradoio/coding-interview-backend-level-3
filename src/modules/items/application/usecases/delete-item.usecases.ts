@@ -1,4 +1,5 @@
 import { AppError } from "../../../../errors/app-error";
+import { ErrorBussines } from "../../../../errors/constants.errors";
 import { ItemRepository } from "../../dommain/item.repository";
 
 
@@ -8,7 +9,7 @@ export class DeleteItemUseCase {
   async execute(id: number): Promise<void> {
     const existingItem = await this.itemRepository.findById(id);
     if (!existingItem) {
-      throw new AppError('Item not found', 404);
+      throw new AppError(ErrorBussines.ITEM_NOT_FOUND, 404);
     }
     await this.itemRepository.delete(id);
   }
