@@ -6,6 +6,7 @@ import { CreateItemUseCase } from "../../application/usecases/create-item.usecas
 import { UpdateItemUseCase } from "../../application/usecases/update-item.usecases";
 import { DeleteItemUseCase } from "../../application/usecases/delete-item.usecases";
 import { GetItemByIdUseCase } from "../../application/usecases/get-item-by-id.usecases";
+import { handleError } from "../../../../errors/error-handler";
 
 const itemRepository = new TypeORMItemRepository();
 const getItemsUseCase = new GetItemsUseCase(itemRepository);
@@ -20,7 +21,7 @@ export class ItemController {
       const items = await getItemsUseCase.execute();
       return h.response(items).code(200);
     } catch (error) {
-      throw new AppError("Failed to get items", 404);
+      return handleError(error, request, h);
     }
   }
   async createItem(request: Request, h: ResponseToolkit) {
@@ -32,19 +33,7 @@ export class ItemController {
       const newItem = await createItemUseCase.execute(name, price);
       return h.response(newItem).code(201);
     } catch (error) {
-      if (error instanceof AppError) {
-        return h
-          .response({
-            errors: [
-              {
-                field: "price",
-                message: error.message,
-              },
-            ],
-          })
-          .code(error.statusCode);
-      }
-      return h.response({ message: "Internal Server Error" }).code(500);
+      return handleError(error, request, h);
     }
   }
 
@@ -58,21 +47,7 @@ export class ItemController {
       const updatedItem = await updateItemUseCase.execute(itemId, name, price);
       return h.response(updatedItem).code(200);
     } catch (error) {
-      if (error instanceof AppError) {
-        if (error.message === 'Field "price" cannot be negative') {
-          return h
-            .response({
-              errors: [
-                {
-                  field: "price",
-                  message: error.message,
-                },
-              ],
-            })
-            .code(error.statusCode);
-        }
-      }
-      return h.response({ message: "Internal Server Error" }).code(500);
+      return handleError(error, request, h);
     }
   }
 
@@ -82,7 +57,7 @@ export class ItemController {
       await deleteItemUseCase.execute(itemId);
       return h.response().code(204);
     } catch (error) {
-      throw new AppError("Failed to get items", 400);
+      return handleError(error, request, h);
     }
   }
 
@@ -92,10 +67,7 @@ export class ItemController {
       const searchItem = await getItemByIdUseCase.execute(itemId);
       return h.response(searchItem).code(200);
     } catch (error) {
-      if (error instanceof AppError) {
-        return h.response({ message: error.message }).code(error.statusCode);
-      }
-      return h.response({ message: "Internal Server Error" }).code(500);
+      return handleError(error, request, h);
     }
   }
 }
