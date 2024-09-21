@@ -7,6 +7,8 @@ import { UpdateItemUseCase } from "../../application/usecases/update-item.usecas
 import { DeleteItemUseCase } from "../../application/usecases/delete-item.usecases";
 import { GetItemByIdUseCase } from "../../application/usecases/get-item-by-id.usecases";
 import { handleError } from "../../../../errors/error-handler";
+import { CreateItemDto } from "../../application/dtos/create-item.dto";
+import { UpdateItemDto } from "../../application/dtos/update-item.dto";
 
 const itemRepository = new TypeORMItemRepository();
 const getItemsUseCase = new GetItemsUseCase(itemRepository);
@@ -26,11 +28,11 @@ export class ItemController {
   }
   async createItem(request: Request, h: ResponseToolkit) {
     try {
-      const { name, price } = request.payload as {
+      const createItemDto: CreateItemDto = request.payload as {
         name: string;
         price: number;
       };
-      const newItem = await createItemUseCase.execute(name, price);
+      const newItem = await createItemUseCase.execute(createItemDto);
       return h.response(newItem).code(201);
     } catch (error) {
       return handleError(error, request, h);
@@ -39,12 +41,12 @@ export class ItemController {
 
   async updateItem(request: Request, h: ResponseToolkit) {
     try {
-      const { name, price } = request.payload as {
+      const id = parseInt(request.params.id, request.params.price);
+      const updateItemDto: CreateItemDto = request.payload as {
         name: string;
         price: number;
       };
-      const itemId = parseInt(request.params.id, 10);
-      const updatedItem = await updateItemUseCase.execute(itemId, name, price);
+      const updatedItem = await updateItemUseCase.execute(updateItemDto, id);
       return h.response(updatedItem).code(200);
     } catch (error) {
       return handleError(error, request, h);
@@ -53,7 +55,7 @@ export class ItemController {
 
   async deleteItem(request: Request, h: ResponseToolkit) {
     try {
-      const itemId = parseInt(request.params.id, 10);
+      const itemId = parseInt(request.params.id, request.params.price);
       await deleteItemUseCase.execute(itemId);
       return h.response().code(204);
     } catch (error) {
@@ -63,7 +65,7 @@ export class ItemController {
 
   async getItemById(request: Request, h: ResponseToolkit) {
     try {
-      const itemId = parseInt(request.params.id, 10);
+      const itemId = parseInt(request.params.id);
       const searchItem = await getItemByIdUseCase.execute(itemId);
       return h.response(searchItem).code(200);
     } catch (error) {

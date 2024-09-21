@@ -2,11 +2,13 @@ import { AppError } from "../../../../errors/app-error";
 import { ErrorBussines } from "../../../../errors/constants.errors";
 import { Item } from "../../dommain/item.entity";
 import { ItemRepository } from "../../dommain/item.repository";
+import { CreateItemDto } from "../dtos/create-item.dto";
 
 export class CreateItemUseCase {
   constructor(private readonly itemRepository: ItemRepository) {}
 
-  async execute(name: string, price: number): Promise<Item> {
+  async execute(createItemDto: CreateItemDto): Promise<Item> {
+    const { name, price } = createItemDto;
     if (price < 0) {
       throw new AppError(ErrorBussines.PRICE_NEGATIVE, 400);
     }
