@@ -1,5 +1,4 @@
 import Hapi from '@hapi/hapi'
-//import { defineRoutes } from './routes'
 import { AppDataSource } from './config/database/ormconfig'
 import { config } from './config/config'
 import { AppModule } from './app.module'
@@ -9,9 +8,6 @@ const getServer = () => {
         host: 'localhost',
         port: config.portMs,
     })
-
-   // defineRoutes(server)
-
     return server
 }
 
