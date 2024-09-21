@@ -1,5 +1,6 @@
 import { Server } from "@hapi/hapi";
 import { ItemController } from "./item.controller";
+import { validateIdParam } from "../../../../middleware/validation-param.middleware";
 
 const itemController = new ItemController();
 
@@ -23,6 +24,9 @@ export const ItemRoutes = (server: Server) => {
       method: "GET",
       path: "/items/{id}",
       handler: itemController.getItemById.bind(itemController),
+      options: {
+        pre: [{ method: validateIdParam }],
+      },
     },
     {
       method: "POST",
@@ -33,11 +37,17 @@ export const ItemRoutes = (server: Server) => {
       method: "PUT",
       path: "/items/{id}",
       handler: itemController.updateItem.bind(itemController),
+      options: {
+        pre: [{ method: validateIdParam }],
+      },
     },
     {
       method: "DELETE",
       path: "/items/{id}",
       handler: itemController.deleteItem.bind(itemController),
+      options: {
+        pre: [{ method: validateIdParam }],
+      },
     },
   ]);
 };

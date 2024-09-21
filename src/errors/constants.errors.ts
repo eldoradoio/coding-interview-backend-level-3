@@ -4,5 +4,6 @@ export const ErrorBussines = {
     ITEM_NOT_FOUND: 'Item not found',
     INTERNAL_ERROR: 'Internal Server Error',
     FAILED_TO_CREATE_ITEM: 'Failed to create item',
-    FAILED_TO_FETCH_ITEM: 'Failed to fetch item'
+    FAILED_TO_FETCH_ITEM: 'Failed to fetch item',
+    INVALID_ID: 'Invalid ID format.'
 }
