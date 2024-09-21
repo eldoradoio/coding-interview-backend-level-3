@@ -9,16 +9,13 @@ dotenv.config({
 
 const envSchema = joi.object({
     NODE_ENV: joi.string().valid('development', 'test', 'production').default('development'),
+    PORT_MS: joi.string().required(),
+    DB_TYPE: joi.string().required(),
     DB_HOST: joi.string().required(),
     DB_PORT: joi.number().required(),
     DB_USER: joi.string().required(),
     DB_PASSWORD: joi.string().required(),
     DB_NAME: joi.string().required(),
-    TEST_DB_HOST: joi.string().optional(),
-    TEST_DB_PORT: joi.number().optional(),
-    TEST_DB_USER: joi.string().optional(),
-    TEST_DB_PASSWORD: joi.string().optional(),
-    TEST_DB_NAME: joi.string().optional().default(':memory:')
 }).unknown(); 
 
 const { value: envVars, error } = envSchema.validate(process.env);
@@ -28,16 +25,18 @@ if (error) {
 }
 interface AppConfig {
     env: string;
+    portMs: string;
     db: Dbconfig;
   }
 export const config: AppConfig = {
     env: envVars.NODE_ENV,
+    portMs: envVars.PORT_MS,
     db: {
-        type: envVars.NODE_ENV === 'test' && envVars.TEST_DB_NAME === ':memory:' ? 'sqlite' : 'postgres',
-        host: envVars.NODE_ENV === 'test' && envVars.TEST_DB_NAME === ':memory:' ? undefined : envVars.TEST_DB_HOST || envVars.DB_HOST,
-        port: envVars.NODE_ENV === 'test' && envVars.TEST_DB_NAME === ':memory:' ? undefined : envVars.TEST_DB_PORT || envVars.DB_PORT,
-        username: envVars.NODE_ENV === 'test' && envVars.TEST_DB_NAME === ':memory:' ? undefined : envVars.TEST_DB_USER || envVars.DB_USER,
-        password: envVars.NODE_ENV === 'test' && envVars.TEST_DB_NAME === ':memory:' ? undefined : envVars.TEST_DB_PASSWORD || envVars.DB_PASSWORD,
-        database: envVars.NODE_ENV === 'test' ? envVars.TEST_DB_NAME : envVars.DB_NAME,
+        type: envVars.DB_TYPE ,
+        host: envVars.DB_HOST,
+        port: envVars.DB_PORT,
+        username: envVars.DB_USER,
+        password: envVars.DB_PASSWORD,
+        database: envVars.DB_NAME,
     }
 };

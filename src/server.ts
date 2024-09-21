@@ -1,14 +1,16 @@
 import Hapi from '@hapi/hapi'
-import { defineRoutes } from './routes'
+//import { defineRoutes } from './routes'
 import { AppDataSource } from './config/database/ormconfig'
+import { config } from './config/config'
+import { AppModule } from './app.module'
 
 const getServer = () => {
     const server = Hapi.server({
         host: 'localhost',
-        port: 3000,
+        port: config.portMs,
     })
 
-    defineRoutes(server)
+   // defineRoutes(server)
 
     return server
 }
@@ -18,6 +20,8 @@ export const initializeServer = async (start=false) => {
         await AppDataSource.initialize()
     }
     const server = getServer()
+    await AppModule.registerModules(server);
+
     if(start){
         await server.start()
         console.log(`Server running on ${server.info.uri}`)
