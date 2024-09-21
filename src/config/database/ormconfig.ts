@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
-import { Item } from '../../entities/item.entities';
 import { config } from '../config';
+import { Item } from '../../modules/items/dommain/item.entity';
 
 export const AppDataSource = new DataSource({
     type: config.db.type,
