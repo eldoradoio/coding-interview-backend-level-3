@@ -1,4 +1,5 @@
 import { AppError } from "../../../../errors/app-error";
+import { ErrorBussines } from "../../../../errors/constants.errors";
 import { Item } from "../../dommain/item.entity";
 import { ItemRepository } from "../../dommain/item.repository";
 
@@ -8,15 +9,15 @@ export class UpdateItemUseCase {
 
   async execute(id: number, name: string, price: number): Promise<Item> {
     if (price < 0) {
-      throw new AppError('Field "price" cannot be negative', 400);
+      throw new AppError(ErrorBussines.PRICE_NEGATIVE, 400);
     }
     if (price === undefined || price === null) {
-        throw new AppError('Field "price" is required', 400);
-      }
+        throw new AppError(ErrorBussines.PRICE_REQUIRED, 400);
+    }
 
     const existingItem = await this.itemRepository.findById(id);
     if (!existingItem) {
-      throw new AppError('Item not found', 404);
+      throw new AppError(ErrorBussines.ITEM_NOT_FOUND, 404);
     }
 
     existingItem.name = name;
