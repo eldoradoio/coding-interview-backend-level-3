@@ -1,6 +1,6 @@
-import { Item } from "../../../../entities/item.entities";
 import { AppError } from "../../../../errors/app-error";
 import { ErrorBussines } from "../../../../errors/constants.errors";
+import { Item } from "../../dommain/item.entity";
 import { ItemRepository } from "../../dommain/item.repository";
 
 export class CreateItemUseCase {

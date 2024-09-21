@@ -1,5 +1,5 @@
 import { AppDataSource } from "../../../../config/database/ormconfig";
-import { Item } from "../../../../entities/item.entities";
+import { Item } from "../../dommain/item.entity";
 import { ItemRepository } from "../../dommain/item.repository";
 
 export class TypeORMItemRepository implements ItemRepository {
