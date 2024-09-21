@@ -3,7 +3,6 @@ import { ErrorBussines } from "../../../../errors/constants.errors";
 import { Item } from "../../dommain/item.entity";
 import { ItemRepository } from "../../dommain/item.repository";
 
-
 export class UpdateItemUseCase {
   constructor(private readonly itemRepository: ItemRepository) {}
 
@@ -12,7 +11,7 @@ export class UpdateItemUseCase {
       throw new AppError(ErrorBussines.PRICE_NEGATIVE, 400);
     }
     if (price === undefined || price === null) {
-        throw new AppError(ErrorBussines.PRICE_REQUIRED, 400);
+      throw new AppError(ErrorBussines.PRICE_REQUIRED, 400);
     }
 
     const existingItem = await this.itemRepository.findById(id);

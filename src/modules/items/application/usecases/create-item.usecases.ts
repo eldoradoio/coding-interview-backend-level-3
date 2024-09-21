@@ -11,8 +11,8 @@ export class CreateItemUseCase {
       throw new AppError(ErrorBussines.PRICE_NEGATIVE, 400);
     }
     if (price === undefined || price === null) {
-        throw new AppError(ErrorBussines.PRICE_REQUIRED, 400);
-      }
+      throw new AppError(ErrorBussines.PRICE_REQUIRED, 400);
+    }
     try {
       const newItem = new Item();
       newItem.name = name;
