@@ -5,16 +5,7 @@ import { config } from './config/config';
 import { AppModule } from './app.module';
 
 const getServer = () => {
-    const server = Hapi.server({
-        host: '0.0.0.0',
-        port: config.portMs,
-        routes: {
-            cors: {
-                origin: ['*'],
-                additionalHeaders: ['cache-control', 'x-requested-with'],
-            }
-        }
-    })
+    const server = Hapi.server(config.server)
     return server
 }
 

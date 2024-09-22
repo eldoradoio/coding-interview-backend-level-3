@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as joi from 'joi';
 import { Dbconfig } from './interfaces/db.interfaces';
+import { ServerConfig } from './interfaces/server.interfaces';
 
 
 dotenv.config({
@@ -27,6 +28,7 @@ interface AppConfig {
     env: string;
     portMs: string;
     db: Dbconfig;
+    server: ServerConfig
   }
 export const config: AppConfig = {
     env: envVars.NODE_ENV,
@@ -38,5 +40,17 @@ export const config: AppConfig = {
         username: envVars.DB_USER,
         password: envVars.DB_PASSWORD,
         database: envVars.DB_NAME,
+    },
+    server: {
+        host: 'localhost',
+        port: envVars.PORT_MS,
+        routes: {
+          cors: {
+            origin: ['*'],
+            additionalHeaders: ['cache-control', 'x-requested-with'],
+          }
+        }
     }
 };
+
+
