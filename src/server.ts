@@ -1,12 +1,19 @@
-import Hapi from '@hapi/hapi'
-import { AppDataSource } from './config/database/ormconfig'
-import { config } from './config/config'
-import { AppModule } from './app.module'
+
+import Hapi from '@hapi/hapi';
+import { AppDataSource } from './config/database/ormconfig';
+import { config } from './config/config';
+import { AppModule } from './app.module';
 
 const getServer = () => {
     const server = Hapi.server({
-        host: 'localhost',
+        host: '0.0.0.0',
         port: config.portMs,
+        routes: {
+            cors: {
+                origin: ['*'],
+                additionalHeaders: ['cache-control', 'x-requested-with'],
+            }
+        }
     })
     return server
 }

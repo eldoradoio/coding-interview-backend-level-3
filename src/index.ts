@@ -1,4 +1,5 @@
 import { startServer } from "./server"
+import 'dotenv/config';
 
 process.on('unhandledRejection', (err) => {
     console.error(err)
