@@ -37,17 +37,14 @@ const CounterSchema: Schema = new Schema({
 export const createCounterModel = (connection: Connection) => connection.model<ICounter>("Counter", CounterSchema);
 
 export async function getNextSequence(name: string, connection: Connection): Promise<number> {
-  console.log("11");
   const Counter = createCounterModel(connection);
   const counter = await Counter.findByIdAndUpdate(
     name,
     { $inc: { seq: 1 } },
     { new: true, upsert: true }
   );
-  console.log("12", counter);
   if (!counter) {
     throw new Error("Failed to generate sequence");
   }
-
   return counter.seq;
 }

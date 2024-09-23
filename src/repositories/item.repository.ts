@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
-import { IItem, createItemModel } from "../models/item.model";
+import { IItem, createItemModel, getNextSequence } from "../models/item.model";
 
 export class ItemRepository {
   private model: mongoose.Model<IItem>;
+  private connection: mongoose.Connection;
 
   constructor(connection: mongoose.Connection) {
     this.model = createItemModel(connection);
+    this.connection = connection;
   }
 
   async findAll(): Promise<IItem[]> {
@@ -38,12 +40,13 @@ export class ItemRepository {
     return this.model.countDocuments();
   }
 
-  async create(item: IItem): Promise<IItem> {
-    console.log("13");
+  async getNextSequence(sequenceName: string): Promise<number> {
+    return getNextSequence(sequenceName, this.connection);
+  }
+
+  async create(item: Omit<IItem, "id">): Promise<IItem> {
     const newItem = new this.model(item);
-    console.log("14", newItem);
     await newItem.save();
-    console.log("15 newitem", newItem);
     return newItem.toObject({
       versionKey: false,
       transform: (doc: any, ret: any) => {

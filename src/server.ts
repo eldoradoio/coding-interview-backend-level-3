@@ -4,19 +4,28 @@ import { connectToDatabase } from "./config/database";
 import { ItemRepository } from "./repositories/item.repository";
 import { ItemService } from "./services/item.service";
 import { ItemController } from "./controllers/item.controller";
+import mongoose from "mongoose";
+
+declare module '@hapi/hapi' {
+  interface ServerApplicationState {
+    databases: { dbA: mongoose.Connection; dbB: mongoose.Connection };
+  }
+}
 
 export const initializeServer = async () => {
   const { dbA, dbB } = await connectToDatabase();
 
   const itemRepositoryA = new ItemRepository(dbA);
   const itemRepositoryB = new ItemRepository(dbB);
-  const itemService = new ItemService(itemRepositoryA, itemRepositoryB, dbA, dbB);
+  const itemService = new ItemService(itemRepositoryA, itemRepositoryB);
   const itemController = new ItemController(itemService);
 
   const server = Hapi.server({
     port: process.env.PORT || 3000,
     host: "0.0.0.0",
   });
+
+  server.app.databases = { dbA, dbB };
 
   itemRoutes(server, itemController);
 

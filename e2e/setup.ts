@@ -3,35 +3,42 @@ import mongoose from "mongoose";
 import { initializeServer } from "../src/server";
 import { Server } from "@hapi/hapi";
 
-let mongo: MongoMemoryServer | undefined;
+let mongoA: MongoMemoryServer;
+let mongoB: MongoMemoryServer;
 let server: Server;
 
 beforeAll(async () => {
-  if (mongoose.connection.readyState === 0) {
-    mongo = await MongoMemoryServer.create();
-    const mongoUri = mongo.getUri();
-    await mongoose.connect(mongoUri);
-  }
+  mongoA = await MongoMemoryServer.create();
+  mongoB = await MongoMemoryServer.create();
+  
+  const uriA = mongoA.getUri();
+  const uriB = mongoB.getUri();
+
+  process.env.MONGO_URI_A = uriA;
+  process.env.MONGO_URI_B = uriB;
+
   server = await initializeServer();
   await server.initialize();
 });
 
 beforeEach(async () => {
   jest.clearAllMocks();
-  const collections = await mongoose.connection.db?.collections();
-  if (!collections) return;
-  for (let collection of collections) {
-    await collection.deleteMany({});
-  }
-});
-
-afterEach(async () => {
-  await server.stop();
+  const { dbA, dbB } = server.app.databases;
+  await Promise.all([
+    dbA.dropDatabase(),
+    dbB.dropDatabase()
+  ]);
 });
 
 afterAll(async () => {
-  if (mongo) {
-    await mongo.stop();
+  if (server) {
+    await server.stop();
   }
-  await mongoose.connection.close();
+  await Promise.all([
+    mongoA.stop(),
+    mongoB.stop()
+  ]);
+  await mongoose.disconnect();
 });
+
+export { server };

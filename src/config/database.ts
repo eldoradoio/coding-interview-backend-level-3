@@ -3,10 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const MONGO_URI_A =
-  process.env.MONGO_URI_A || "mongodb://localhost:27017/items_a";
-const MONGO_URI_B =
-  process.env.MONGO_URI_B || "mongodb://localhost:27018/items_b";
+const MONGO_URI_A = process.env.MONGO_URI_A || "mongodb://localhost:27017/items_a";
+const MONGO_URI_B = process.env.MONGO_URI_B || "mongodb://localhost:27018/items_b";
 
 export const connectToDatabase = async () => {
   try {
