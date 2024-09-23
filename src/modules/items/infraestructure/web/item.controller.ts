@@ -42,7 +42,7 @@ export class ItemController {
   async updateItem(request: Request, h: ResponseToolkit) {
     try {
       const id = parseInt(request.params.id, request.params.price);
-      const updateItemDto: CreateItemDto = request.payload as {
+      const updateItemDto: UpdateItemDto = request.payload as {
         name: string;
         price: number;
       };
