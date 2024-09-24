@@ -1,17 +1,14 @@
-import { Server } from "@hapi/hapi"
-import { ItemController } from "./controllers"
+import { Server } from "@hapi/hapi";
+import * as fs from 'fs';
+import * as path from 'path';
 
 export const defineRoutes = (server: Server) => {
-    server.route({
-        method: 'GET',
-        path: '/ping',
-        handler: async (request, h) => {
-            return {
-                ok: true
-            }
+    const modulesPath = path.join(__dirname, 'modules');
+    fs.readdirSync(modulesPath).forEach(file => {
+        const modulePath = path.join(modulesPath, file);
+        const module = require(modulePath);
+        if (module.initializeModule) {
+            module.initializeModule(server);
         }
     });
-
-    const itemController = new ItemController();
-    itemController.init(server);
-}
+};

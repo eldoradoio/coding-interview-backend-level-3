@@ -19,8 +19,8 @@ const validationPipe = (schema: any) => (request: Request, h: ResponseToolkit) =
 export class ItemController {
     private itemService: ItemService;
 
-    constructor() {
-        this.itemService = new ItemService();
+    constructor(itemService: ItemService) {
+        this.itemService = itemService;
     }
 
     public init(server: any) {
