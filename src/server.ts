@@ -1,4 +1,5 @@
 import Hapi, { Server } from '@hapi/hapi'
+import config from './config';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -15,8 +16,8 @@ const loadModules = (server: Server) => {
 
 const getServer = () => {
     const server = Hapi.server({
-        host: 'localhost',
-        port: 3000,
+        host: config.host,
+        port: config.port
     })
 
     loadModules(server);
