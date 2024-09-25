@@ -62,12 +62,6 @@ export class ItemController {
                     description: 'Creates a new item',
                     notes: 'Creates a new item',
                     tags: ['api'],
-                    validate: {
-                        payload: Joi.object({
-                            name: Joi.string().required().description('Name of the item'),
-                            price: Joi.number().required().description('Price of the item')
-                        })
-                    }
                 }
             },
             {
