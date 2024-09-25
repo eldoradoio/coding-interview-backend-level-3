@@ -1,7 +1,7 @@
 import { Server } from "@hapi/hapi";
 import mongoose from 'mongoose';
 import { ItemController } from "./controllers";
-import { ItemService, ItemService2 } from "./services";
+import { ItemService } from "./services";
 import { Configuration } from "../../config";
 
 export const initializeModule = async (server: Server, configuration: Configuration) => {
