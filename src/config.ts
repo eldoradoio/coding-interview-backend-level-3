@@ -3,14 +3,14 @@ import * as path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-interface Config {
+export interface Configuration {
     host: string;
     port: number;
+    dbConnectionString: string;
 }
 
-const config: Config = {
+export const configuration: Configuration = {
     host: process.env.HOST || 'localhost',
     port: parseInt(process.env.PORT || '3000', 10),
+    dbConnectionString: process.env.DB_CONNECTION_STRING || '',
 };
-
-export default config;

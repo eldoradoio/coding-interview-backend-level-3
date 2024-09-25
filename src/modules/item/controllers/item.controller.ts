@@ -1,21 +1,8 @@
-import Joi, { ObjectSchema } from "joi";
+import Joi from "joi";
 import { Request, ResponseToolkit, Server, ResponseObject } from '@hapi/hapi';
 import { ItemService } from '../services';
 import { itemCreationSchema, itemUpdateSchema } from '../schemas';
-
-const validationPipe = (schema: ObjectSchema) => (request: Request, h: ResponseToolkit) => {
-    const { error } = schema.validate(request.payload);
-    if (error) {
-        const errors = error.details.map((detail: any) => ({
-            field: detail.context?.key,
-            message: detail.message,
-        }));
-
-        return h.response({ errors }).code(400).takeover();
-    }
-
-    return h.continue;
-}
+import { validationPipe } from "../../../pipelines";
 
 const handleErrors = (handler: (request: Request, h: ResponseToolkit) => Promise<ResponseObject>) => {
     return async (request: Request, h: ResponseToolkit) => {
@@ -26,7 +13,6 @@ const handleErrors = (handler: (request: Request, h: ResponseToolkit) => Promise
         }
     };
 };
-
 
 export class ItemController {
     private readonly itemService: ItemService;
@@ -57,7 +43,7 @@ export class ItemController {
                     tags: ['api'],
                     validate: {
                         params: Joi.object({
-                            id: Joi.number().required().description('ID of the item')
+                            id: Joi.string().required().description('ID of the item')
                         })
                     }
                 }
@@ -88,7 +74,7 @@ export class ItemController {
                     tags: ['api'],
                     validate: {
                         params: Joi.object({
-                            id: Joi.number().required().description('ID of the item')
+                            id: Joi.string().required().description('ID of the item')
                         }),
                     },
                 }
@@ -98,12 +84,12 @@ export class ItemController {
                 path: '/items/{id}',
                 options: {
                     handler: handleErrors(this.delete.bind(this)),
-                    description: 'Ping',
+                    description: 'Deletes an item',
                     notes: 'Deletes an item',
                     tags: ['api'],
                     validate: {
                         params: Joi.object({
-                            id: Joi.number().required().description('ID of the item')
+                            id: Joi.string().required().description('ID of the item')
                         }),
                     },
                 },
@@ -118,7 +104,7 @@ export class ItemController {
     }
 
     public async get(request: Request, response: ResponseToolkit) {
-        const id = parseInt(request.params.id, 10);
+        const { params: { id }} = request;
         const result = await this.itemService.get(id);
 
         return response.response(result).code(200);
@@ -132,7 +118,7 @@ export class ItemController {
     }
 
     public async update(request: Request, response: ResponseToolkit) {
-        const id = parseInt(request.params.id, 10);
+        const { params: { id }} = request;
         const { name, price } = request.payload as { name: string; price: number };
         const result = await this.itemService.update(id, name, price);
 
@@ -140,9 +126,9 @@ export class ItemController {
     }
 
     public async delete(request: Request, response: ResponseToolkit) {
-        const id = parseInt(request.params.id, 10);
-        const result = await this.itemService.delete(id);
+        const { params: { id }} = request;
+        await this.itemService.delete(id);
         
-        return response.response(result).code(204);
+        return response.response().code(204);
     }
 };

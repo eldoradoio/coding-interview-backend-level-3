@@ -1,51 +1,47 @@
 import { IItem } from '../interfaces/item.interface';
+import { Item, DocumentItem } from '../models';
 import { ItemNotFoundError } from '../errors';
 
 export class ItemService {
-    private items: IItem[] = [];
-    private currentId: number = 1;
+    private connection: any;
 
-    async list() {
-        return this.items;
+    constructor(connnection: any) {
+        this.connection = connnection;
     }
 
-    async get(id: number) {
-        const item = this.items.find(item => item.id === id);
+    async list(): Promise<DocumentItem[]> {
+        return await Item.find();
+    }
+
+    async get(id: number): Promise<DocumentItem> {
+        const item = await Item.findById(id);
         if (!item) {
             throw new ItemNotFoundError();
         }
-        
         return item;
     }
 
-    async create(name: string, price: number) {
-        const newItem: IItem = {
-            id: this.currentId++,
-            name,
-            price,
-        };
-        this.items.push(newItem);
+    async create(name: string, price: number): Promise<DocumentItem> {
+        const newItem = new Item({ name, price });
         
-        return newItem;
+        return await newItem.save();
     }
 
-    async update(id: number, name: string, price: number) {
-        const itemIndex = this.items.findIndex(item => item.id === id);
-        if (itemIndex === -1) {
+    async update(id: number, name: string, price: number): Promise<DocumentItem> {
+        const item = await Item.findByIdAndUpdate(id, { name, price }, { new: true });
+        if (!item) {
             throw new ItemNotFoundError();
         }
-        this.items[itemIndex] = { id, name, price };
-        
-        return this.items[itemIndex];
+
+        return item;
     }
 
-    async delete(id: number) {
-        const itemIndex = this.items.findIndex(item => item.id === id);
-        if (itemIndex === -1) {
+    async delete(id: number): Promise<null> {
+        const item = await Item.findByIdAndDelete(id);
+        if (!item) {
             throw new ItemNotFoundError();
         }
-        const deletedItem = this.items.splice(itemIndex, 1);
-        
-        return deletedItem[0];
+
+        return null;
     }
 }
