@@ -5,7 +5,7 @@ export const requestLogger = (request: Request, response: ResponseToolkit) => {
     const method = request.method.toUpperCase();
     const path = request.path;
     const payload = JSON.stringify(request.payload);
-    const log = `${date} - ${method} ${path} - Payload: ${payload ? payload : 'No payload'}`;
+    const log = `${date} - ${method} ${path} ${payload ? " - Payload: " + payload : ''}`;
     console.log(log);
     
     return response.continue;
