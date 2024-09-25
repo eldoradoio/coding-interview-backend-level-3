@@ -1,18 +1,9 @@
 import Joi from "joi";
-import { Request, ResponseToolkit, Server, ResponseObject } from '@hapi/hapi';
+import { Request, ResponseToolkit, Server } from '@hapi/hapi';
 import { ItemService } from '../services';
 import { itemCreationSchema, itemUpdateSchema } from '../schemas';
 import { validationPipe } from "../../../pipelines";
-
-const handleErrors = (handler: (request: Request, h: ResponseToolkit) => Promise<ResponseObject>) => {
-    return async (request: Request, h: ResponseToolkit) => {
-        try {
-            return await handler(request, h);
-        } catch (error: Error | any) {
-            return h.response({ error: 'Internal Server Error' }).code(error.statusCode || 500);
-        }
-    };
-};
+import { handleErrors } from "../../../handlers";
 
 export class ItemController {
     private readonly itemService: ItemService;
