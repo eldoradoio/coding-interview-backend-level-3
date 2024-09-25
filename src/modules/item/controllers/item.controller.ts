@@ -1,8 +1,9 @@
-import { Request, ResponseToolkit } from '@hapi/hapi';
+import Joi, { ObjectSchema } from "joi";
+import { Request, ResponseToolkit, Server } from '@hapi/hapi';
 import { ItemService } from '../services';
 import { itemCreationSchema, itemUpdateSchema } from '../schemas';
 
-const validationPipe = (schema: any) => (request: Request, h: ResponseToolkit) => {
+const validationPipe = (schema: ObjectSchema) => (request: Request, h: ResponseToolkit) => {
     const { error } = schema.validate(request.payload);
     if (error) {
         const errors = error.details.map((detail: any) => ({
@@ -17,23 +18,38 @@ const validationPipe = (schema: any) => (request: Request, h: ResponseToolkit) =
 }
 
 export class ItemController {
-    private itemService: ItemService;
+    private readonly itemService: ItemService;
 
     constructor(itemService: ItemService) {
         this.itemService = itemService;
     }
 
-    public init(server: any) {
+    public init(server: Server) {
         server.route([
             {
                 method: 'GET',
                 path: '/items',
-                handler: this.list.bind(this)
+                options: {
+                    handler: this.list.bind(this),
+                    description: 'Returns a list of items',
+                    notes: 'Returns a list of items',
+                    tags: ['api'],
+                }
             },
             {
                 method: 'GET',
                 path: '/items/{id}',
-                handler: this.get.bind(this)
+                options: {
+                    handler: this.get.bind(this),
+                    description: 'Returns a single item',
+                    notes: 'Returns a single item',
+                    tags: ['api'],
+                    validate: {
+                        params: Joi.object({
+                            id: Joi.number().required().description('ID of the item')
+                        })
+                    }
+                }
             },
             {
                 method: 'POST',
@@ -42,7 +58,16 @@ export class ItemController {
                     pre: [
                         { method: validationPipe(itemCreationSchema), assign: 'validation' }
                     ],
-                    handler: this.create.bind(this)
+                    handler: this.create.bind(this),
+                    description: 'Creates a new item',
+                    notes: 'Creates a new item',
+                    tags: ['api'],
+                    validate: {
+                        payload: Joi.object({
+                            name: Joi.string().required().description('Name of the item'),
+                            price: Joi.number().required().description('Price of the item')
+                        })
+                    }
                 }
             },
             {
@@ -53,12 +78,30 @@ export class ItemController {
                         { method: validationPipe(itemUpdateSchema), assign: 'validation' }
                     ],
                     handler: this.update.bind(this),
+                    description: 'Updates an item',
+                    notes: 'Updates an item',
+                    tags: ['api'],
+                    validate: {
+                        params: Joi.object({
+                            id: Joi.number().required().description('ID of the item')
+                        }),
+                    },
                 }
             },
             {
                 method: 'DELETE',
                 path: '/items/{id}',
-                handler: this.delete.bind(this)
+                options: {
+                    handler: this.delete.bind(this),
+                    description: 'Ping',
+                    notes: 'Deletes an item',
+                    tags: ['api'],
+                    validate: {
+                        params: Joi.object({
+                            id: Joi.number().required().description('ID of the item')
+                        }),
+                    },
+                },
             }
         ]);
     }

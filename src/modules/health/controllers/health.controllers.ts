@@ -5,7 +5,12 @@ export class HealthController {
         server.route({
             method: 'GET',
             path: '/ping',
-            handler: this.ping.bind(this),
+            options: {
+                handler: this.ping.bind(this),
+                description: 'Ping',
+                notes: 'Returns a pong response',
+                tags: ['api', 'health'],
+            }
         });
     }
    
