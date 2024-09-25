@@ -10,13 +10,30 @@ import { configuration, Configuration} from './config';
 const packageJsonPath = path.join(__dirname, '../package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
-const loadModules = async (server: Server, configuration: Configuration) => {
+const getModules = async () => {
     const modulesPath: string = path.join(__dirname, 'modules');
-    fs.readdirSync(modulesPath).forEach(async file => {
+    return fs.readdirSync(modulesPath).map(file => {
         const modulePath = path.join(modulesPath, file);
-        const module = require(modulePath);
+        const module = require(modulePath)
+        
+        return module;
+    });
+}
+
+const loadModules = async (server: Server, configuration: Configuration) => {
+    const modules = await getModules();
+    modules.forEach(async module => {
         if (module.initializeModule) {
             await module.initializeModule(server, configuration);
+        }
+    });
+}
+
+const unloadModules = async () => {
+    const modules = await getModules();
+    modules.forEach(async module => {
+        if (module.stopModule) {
+            await module.stopModule();
         }
     });
 }
@@ -47,6 +64,11 @@ const getServer = async () => {
     server.ext('onPreHandler', requestLogger);
 
     await loadModules(server, configuration);
+
+    server.ext('onPreStop', async () => {
+        console.log('Server is stopping, unloading modules...');
+        await unloadModules();
+    });
 
     return server
 }

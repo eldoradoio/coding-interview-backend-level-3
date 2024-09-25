@@ -1,11 +1,17 @@
 import { Schema, model, Document } from 'mongoose';
+import { Counter } from './counter.model';
 
 export interface DocumentItem extends Document {
     name: string;
     price: number;
+    id: number;
 }
 
 const ItemSchema = new Schema<DocumentItem>({
+    id: {
+        type: Number,
+        unique: true
+    },
     name: {
         type: String,
         required: true,
@@ -16,11 +22,22 @@ const ItemSchema = new Schema<DocumentItem>({
     },
 });
 
+ItemSchema.pre<DocumentItem>('save', async function (next) {
+    if (this.isNew) {
+        const counter = await Counter.findByIdAndUpdate(
+            { _id: 'itemId' },
+            { $inc: { seq: 1 } },
+            { new: true, upsert: true }
+        );
+        this.id = counter!.seq;
+    }
+    next();
+});
+
 ItemSchema.set('toJSON', {
     virtuals: true,
     versionKey: false,
     transform: (doc, ret) => {
-        ret.id = ret._id;
         delete ret._id;
     }
 });

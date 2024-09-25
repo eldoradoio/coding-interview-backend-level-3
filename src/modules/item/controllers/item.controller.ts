@@ -12,7 +12,7 @@ export class ItemController {
         this.itemService = itemService;
     }
 
-    public init(server: Server) {
+    public async init(server: Server) {
         server.route([
             {
                 method: 'GET',
@@ -34,9 +34,9 @@ export class ItemController {
                     tags: ['api'],
                     validate: {
                         params: Joi.object({
-                            id: Joi.string().required().description('ID of the item')
-                        })
-                    }
+                            id: Joi.number().required().description('ID of the item')
+                        }),
+                    },
                 }
             },
             {
@@ -65,7 +65,7 @@ export class ItemController {
                     tags: ['api'],
                     validate: {
                         params: Joi.object({
-                            id: Joi.string().required().description('ID of the item')
+                            id: Joi.number().required().description('ID of the item')
                         }),
                     },
                 }
@@ -80,7 +80,7 @@ export class ItemController {
                     tags: ['api'],
                     validate: {
                         params: Joi.object({
-                            id: Joi.string().required().description('ID of the item')
+                            id: Joi.number().required().description('ID of the item')
                         }),
                     },
                 },
@@ -96,7 +96,7 @@ export class ItemController {
 
     public async get(request: Request, response: ResponseToolkit) {
         const { params: { id }} = request;
-        const result = await this.itemService.get(id);
+        const result = await this.itemService.get(Number(id));
 
         return response.response(result).code(200);
     }
@@ -111,14 +111,14 @@ export class ItemController {
     public async update(request: Request, response: ResponseToolkit) {
         const { params: { id }} = request;
         const { name, price } = request.payload as { name: string; price: number };
-        const result = await this.itemService.update(id, name, price);
+        const result = await this.itemService.update(Number(id), name, price);
 
         return response.response(result).code(200);
     }
 
     public async delete(request: Request, response: ResponseToolkit) {
         const { params: { id }} = request;
-        await this.itemService.delete(id);
+        await this.itemService.delete(Number(id));
         
         return response.response().code(204);
     }

@@ -13,8 +13,8 @@ export class ItemService {
         return await Item.find();
     }
 
-    async get(id: number): Promise<DocumentItem> {
-        const item = await Item.findById(id);
+    async get(id: number): Promise<any> {
+        const item = await Item.findOne({ id });
         if (!item) {
             throw new ItemNotFoundError();
         }
@@ -28,7 +28,7 @@ export class ItemService {
     }
 
     async update(id: number, name: string, price: number): Promise<DocumentItem> {
-        const item = await Item.findByIdAndUpdate(id, { name, price }, { new: true });
+        const item = await Item.findOneAndUpdate({ id }, { name, price }, { new: true });
         if (!item) {
             throw new ItemNotFoundError();
         }
@@ -37,7 +37,7 @@ export class ItemService {
     }
 
     async delete(id: number): Promise<null> {
-        const item = await Item.findByIdAndDelete(id);
+        const item = await Item.findOneAndDelete({ id });
         if (!item) {
             throw new ItemNotFoundError();
         }
