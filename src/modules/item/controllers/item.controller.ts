@@ -1,5 +1,5 @@
 import Joi, { ObjectSchema } from "joi";
-import { Request, ResponseToolkit, Server } from '@hapi/hapi';
+import { Request, ResponseToolkit, Server, ResponseObject } from '@hapi/hapi';
 import { ItemService } from '../services';
 import { itemCreationSchema, itemUpdateSchema } from '../schemas';
 
@@ -17,6 +17,17 @@ const validationPipe = (schema: ObjectSchema) => (request: Request, h: ResponseT
     return h.continue;
 }
 
+const handleErrors = (handler: (request: Request, h: ResponseToolkit) => Promise<ResponseObject>) => {
+    return async (request: Request, h: ResponseToolkit) => {
+        try {
+            return await handler(request, h);
+        } catch (error: Error | any) {
+            return h.response({ error: 'Internal Server Error' }).code(error.statusCode || 500);
+        }
+    };
+};
+
+
 export class ItemController {
     private readonly itemService: ItemService;
 
@@ -30,7 +41,7 @@ export class ItemController {
                 method: 'GET',
                 path: '/items',
                 options: {
-                    handler: this.list.bind(this),
+                    handler: handleErrors(this.list.bind(this)),
                     description: 'Returns a list of items',
                     notes: 'Returns a list of items',
                     tags: ['api'],
@@ -40,7 +51,7 @@ export class ItemController {
                 method: 'GET',
                 path: '/items/{id}',
                 options: {
-                    handler: this.get.bind(this),
+                    handler: handleErrors(this.get.bind(this)),
                     description: 'Returns a single item',
                     notes: 'Returns a single item',
                     tags: ['api'],
@@ -58,7 +69,7 @@ export class ItemController {
                     pre: [
                         { method: validationPipe(itemCreationSchema), assign: 'validation' }
                     ],
-                    handler: this.create.bind(this),
+                    handler: handleErrors(this.create.bind(this)),
                     description: 'Creates a new item',
                     notes: 'Creates a new item',
                     tags: ['api'],
@@ -71,7 +82,7 @@ export class ItemController {
                     pre: [
                         { method: validationPipe(itemUpdateSchema), assign: 'validation' }
                     ],
-                    handler: this.update.bind(this),
+                    handler: handleErrors(this.update.bind(this)),
                     description: 'Updates an item',
                     notes: 'Updates an item',
                     tags: ['api'],
@@ -86,7 +97,7 @@ export class ItemController {
                 method: 'DELETE',
                 path: '/items/{id}',
                 options: {
-                    handler: this.delete.bind(this),
+                    handler: handleErrors(this.delete.bind(this)),
                     description: 'Ping',
                     notes: 'Deletes an item',
                     tags: ['api'],
@@ -101,52 +112,37 @@ export class ItemController {
     }
 
     public async list(request: Request, response: ResponseToolkit) {
-        try {
-            const result = await this.itemService.list();
-            return response.response(result).code(200);
-        } catch (error) {
-            return response.response({ error: 'Failed to fetch items' }).code(500);
-        }
+        const result = await this.itemService.list();
+
+        return response.response(result).code(200);
     }
 
     public async get(request: Request, response: ResponseToolkit) {
-        try {
-            const id = parseInt(request.params.id, 10);
-            const result = await this.itemService.get(id);
-            return response.response(result).code(200);
-        } catch (error) {
-            return response.response({ error: 'Failed to fetch item' }).code(404);
-        }
+        const id = parseInt(request.params.id, 10);
+        const result = await this.itemService.get(id);
+
+        return response.response(result).code(200);
     }
 
     public async create(request: Request, response: ResponseToolkit) {
-        try {
-            const { name, price } = request.payload as { name: string; price: number };
-            const result = await this.itemService.create(name, price);
-            return response.response(result).code(201);
-        } catch (error) {
-            return response.response({ error: 'Failed to create item' }).code(500);
-        }
+        const { name, price } = request.payload as { name: string; price: number };
+        const result = await this.itemService.create(name, price);
+
+        return response.response(result).code(201);
     }
 
     public async update(request: Request, response: ResponseToolkit) {
-        try {
-            const id = parseInt(request.params.id, 10);
-            const { name, price } = request.payload as { name: string; price: number };
-            const result = await this.itemService.update(id, name, price);
-            return response.response(result).code(200);
-        } catch (error) {
-            return response.response({ error: 'Failed to update item' }).code(500);
-        }
+        const id = parseInt(request.params.id, 10);
+        const { name, price } = request.payload as { name: string; price: number };
+        const result = await this.itemService.update(id, name, price);
+
+        return response.response(result).code(200);
     }
 
     public async delete(request: Request, response: ResponseToolkit) {
-        try {
-            const id = parseInt(request.params.id, 10);
-            const result = await this.itemService.delete(id);
-            return response.response(result).code(204);
-        } catch (error) {
-            return response.response({ error: 'Failed to delete item' }).code(500);
-        }
+        const id = parseInt(request.params.id, 10);
+        const result = await this.itemService.delete(id);
+        
+        return response.response(result).code(204);
     }
 };

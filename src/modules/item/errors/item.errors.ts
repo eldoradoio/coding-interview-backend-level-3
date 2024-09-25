@@ -1,4 +1,6 @@
 export class ItemNotFoundError extends Error {
+    public readonly statusCode: number = 404;
+
     constructor() {
         super('Item not found');
     }
