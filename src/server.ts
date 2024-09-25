@@ -10,13 +10,13 @@ import { configuration, Configuration} from './config';
 const packageJsonPath = path.join(__dirname, '../package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
-const loadModules = (server: Server, configuration: Configuration) => {
+const loadModules = async (server: Server, configuration: Configuration) => {
     const modulesPath: string = path.join(__dirname, 'modules');
-    fs.readdirSync(modulesPath).forEach(file => {
+    fs.readdirSync(modulesPath).forEach(async file => {
         const modulePath = path.join(modulesPath, file);
         const module = require(modulePath);
         if (module.initializeModule) {
-            module.initializeModule(server, configuration);
+            await module.initializeModule(server, configuration);
         }
     });
 }
@@ -46,7 +46,7 @@ const getServer = async () => {
 
     server.ext('onPreHandler', requestLogger);
 
-    loadModules(server, configuration);
+    await loadModules(server, configuration);
 
     return server
 }
