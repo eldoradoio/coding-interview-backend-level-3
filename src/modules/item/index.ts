@@ -7,8 +7,8 @@ import { Configuration } from "../../config";
 export const initializeModule = async (server: Server, configuration: Configuration) => {
     const { dbConnectionString } = configuration;
     try {
-        const connection = await mongoose.connect(dbConnectionString, { dbName: 'test' });
-        const itemService = new ItemService(connection);
+        const connection = await mongoose.connect(dbConnectionString);
+        const itemService = new ItemService();
         const itemController = new ItemController(itemService);
         itemController.init(server);
     } catch (error) {

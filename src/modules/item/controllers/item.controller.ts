@@ -4,11 +4,22 @@ import { ItemService } from '../services';
 import { itemCreationSchema, itemUpdateSchema } from '../schemas';
 import { validationPipe } from "../../../pipelines";
 import { handleErrors } from "../../../handlers";
+import { ItemDTO } from "../dtos";
+import { toDTO } from "../utils";
 
 export class ItemController {
-    private readonly itemService: ItemService;
+    private itemService!: ItemService;
 
     constructor(itemService: ItemService) {
+        this.list = this.list.bind(this);
+        this.get = this.get.bind(this);
+        this.create = this.create.bind(this);
+        this.update = this.update.bind(this);
+        this.delete = this.delete.bind(this);
+        this.itemService = itemService;
+    }
+
+    public setItemService(itemService: ItemService) {
         this.itemService = itemService;
     }
 
@@ -18,7 +29,7 @@ export class ItemController {
                 method: 'GET',
                 path: '/items',
                 options: {
-                    handler: handleErrors(this.list.bind(this)),
+                    handler: handleErrors(this.list),
                     description: 'Returns a list of items',
                     notes: 'Returns a list of items',
                     tags: ['api'],
@@ -28,7 +39,7 @@ export class ItemController {
                 method: 'GET',
                 path: '/items/{id}',
                 options: {
-                    handler: handleErrors(this.get.bind(this)),
+                    handler: handleErrors(this.get),
                     description: 'Returns a single item',
                     notes: 'Returns a single item',
                     tags: ['api'],
@@ -46,7 +57,7 @@ export class ItemController {
                     pre: [
                         { method: validationPipe(itemCreationSchema), assign: 'validation' }
                     ],
-                    handler: handleErrors(this.create.bind(this)),
+                    handler: handleErrors(this.create),
                     description: 'Creates a new item',
                     notes: 'Creates a new item',
                     tags: ['api'],
@@ -59,7 +70,7 @@ export class ItemController {
                     pre: [
                         { method: validationPipe(itemUpdateSchema), assign: 'validation' }
                     ],
-                    handler: handleErrors(this.update.bind(this)),
+                    handler: handleErrors(this.update),
                     description: 'Updates an item',
                     notes: 'Updates an item',
                     tags: ['api'],
@@ -74,7 +85,7 @@ export class ItemController {
                 method: 'DELETE',
                 path: '/items/{id}',
                 options: {
-                    handler: handleErrors(this.delete.bind(this)),
+                    handler: handleErrors(this.delete),
                     description: 'Deletes an item',
                     notes: 'Deletes an item',
                     tags: ['api'],
@@ -102,16 +113,15 @@ export class ItemController {
     }
 
     public async create(request: Request, response: ResponseToolkit) {
-        const { name, price } = request.payload as { name: string; price: number };
-        const result = await this.itemService.create(name, price);
+        const dto: ItemDTO = toDTO(request.payload);
+        const result = await this.itemService.create(dto);
 
         return response.response(result).code(201);
     }
 
     public async update(request: Request, response: ResponseToolkit) {
-        const { params: { id }} = request;
-        const { name, price } = request.payload as { name: string; price: number };
-        const result = await this.itemService.update(Number(id), name, price);
+        const dto: ItemDTO = toDTO(request.payload);
+        const result = await this.itemService.update(dto);
 
         return response.response(result).code(200);
     }

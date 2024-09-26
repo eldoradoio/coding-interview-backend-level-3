@@ -5,7 +5,9 @@ export const handleErrors = (handler: (request: Request, h: ResponseToolkit) => 
         try {
             return await handler(request, response);
         } catch (error: Error | any) {
-            return response.response({ error: 'Internal Server Error' }).code(error.statusCode || 500);
+            const message = error.message || 'Internal Server Error';
+            const code = error.statusCode || 500;
+            return response.response({ error: message }).code(code);
         }
     };
 };

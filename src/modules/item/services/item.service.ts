@@ -1,43 +1,44 @@
-import { IItem } from '../interfaces/item.interface';
 import { Item, DocumentItem } from '../models';
 import { ItemNotFoundError } from '../errors';
+import { ItemDTO } from '../dtos';
+import { toDTO } from '../utils';
 
 export class ItemService {
-    private connection: any;
 
-    constructor(connnection: any) {
-        this.connection = connnection;
-    }
-
-    async list(): Promise<DocumentItem[]> {
-        return await Item.find();
-    }
-
-    async get(id: number): Promise<any> {
-        const item = await Item.findOne({ id });
-        if (!item) {
-            throw new ItemNotFoundError();
-        }
-        return item;
-    }
-
-    async create(name: string, price: number): Promise<DocumentItem> {
-        const newItem = new Item({ name, price });
+    async list(): Promise<ItemDTO[]> {
+        const items: DocumentItem[] = await Item.find().exec();
         
-        return await newItem.save();
+        return items.map(item => toDTO(item));
     }
 
-    async update(id: number, name: string, price: number): Promise<DocumentItem> {
-        const item = await Item.findOneAndUpdate({ id }, { name, price }, { new: true });
+    async get(id: number): Promise<ItemDTO> {
+        const item: DocumentItem | null = await Item.findOne({ id });
+        if (!item) {
+            throw new ItemNotFoundError();
+        }
+        
+        return toDTO(item);
+    }
+
+    async create(dto: ItemDTO): Promise<ItemDTO> {
+        const newItem: DocumentItem = new Item(dto);
+        const createdItem = await newItem.save();
+
+        return toDTO(createdItem);
+    }
+
+    async update(dto: ItemDTO): Promise<ItemDTO> {
+        const { id, name, price } = dto;
+        const item: DocumentItem | null = await Item.findOneAndUpdate({ id }, { name, price }, { new: true });
         if (!item) {
             throw new ItemNotFoundError();
         }
 
-        return item;
+        return toDTO(item);
     }
 
     async delete(id: number): Promise<null> {
-        const item = await Item.findOneAndDelete({ id });
+        const item: DocumentItem | null = await Item.findOneAndDelete({ id });
         if (!item) {
             throw new ItemNotFoundError();
         }

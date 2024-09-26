@@ -1,46 +1,30 @@
-import * as fs from 'fs';
+import * as filesServer from 'fs';
 import * as path from 'path';
 import Hapi, { Server } from '@hapi/hapi'
 import HapiSwagger from 'hapi-swagger';
 import Inert from '@hapi/inert';
 import Vision from '@hapi/vision';
+
+import mongoose from 'mongoose';
 import { requestLogger } from './pipelines';
 import { configuration, Configuration} from './config';
+import { healthModule, itemModule } from './modules';
 
 const packageJsonPath = path.join(__dirname, '../package.json');
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-
-const getModules = async () => {
-    const modulesPath: string = path.join(__dirname, 'modules');
-    return fs.readdirSync(modulesPath).map(file => {
-        const modulePath = path.join(modulesPath, file);
-        const module = require(modulePath)
-        
-        return module;
-    });
-}
+const packageJson = JSON.parse(filesServer.readFileSync(packageJsonPath, 'utf8'));
 
 const loadModules = async (server: Server, configuration: Configuration) => {
-    const modules = await getModules();
-    modules.forEach(async module => {
-        if (module.initializeModule) {
-            await module.initializeModule(server, configuration);
-        }
-    });
+    await healthModule.initializeModule(server, configuration);
+    await itemModule.initializeModule(server, configuration);
 }
 
 const unloadModules = async () => {
-    const modules = await getModules();
-    modules.forEach(async module => {
-        if (module.stopModule) {
-            await module.stopModule();
-        }
-    });
+    await itemModule.stopModule();
 }
 
 const getServer = async () => {
     const server = Hapi.server({
-        host: configuration.host,
+        host: '0.0.0.0',
         port: configuration.port
     });
 
@@ -51,7 +35,7 @@ const getServer = async () => {
         },
         documentationPath: '/documentation'
     };
-
+    
     await server.register([
         Inert,
         Vision,
@@ -60,13 +44,13 @@ const getServer = async () => {
             options: swaggerOptions
         }
     ]);
-
-    server.ext('onPreHandler', requestLogger);
-
+    
     await loadModules(server, configuration);
-
+    requestLogger(server);
+    
     server.ext('onPreStop', async () => {
         console.log('Server is stopping, unloading modules...');
+        await mongoose.connection.close();
         await unloadModules();
     });
 
