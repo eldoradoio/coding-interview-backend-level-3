@@ -31,6 +31,8 @@ export class ItemListError extends Error {
 }
 
 export class ItemGetError extends Error {
+    public readonly statusCode: number = 404;
+    
     constructor() {
         super('Failed to fetch item');
     }

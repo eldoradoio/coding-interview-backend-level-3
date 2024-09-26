@@ -1,7 +1,12 @@
 import { ObjectSchema } from "joi";
 import { Request, ResponseToolkit } from '@hapi/hapi';
 
-export const validationPipe = (schema: ObjectSchema) => (request: Request, h: ResponseToolkit) => {
+/**
+ * Middleware for validating request payloads against a Joi schema.
+ * @param {ObjectSchema} schema - The Joi schema to validate against.
+ * @returns {Function} A Hapi request lifecycle method for validation.
+ */
+export const validationPipe = (schema: ObjectSchema): Function => (request: Request, h: ResponseToolkit) => {
     const { error } = schema.validate(request.payload);
     if (error) {
         const errors = error.details.map((detail: any) => ({

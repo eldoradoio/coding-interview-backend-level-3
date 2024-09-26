@@ -1,7 +1,7 @@
 import { ItemDTO } from '../dtos';
 import { ItemNotFoundError } from '../errors';
 
-export class ItemService2 {
+export class ItemServiceMemory {
     private items: ItemDTO[] = [];
     private currentId: number = 1;
 
