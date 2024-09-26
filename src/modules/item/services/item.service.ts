@@ -1,19 +1,21 @@
-import { Item, DocumentItem } from '../models';
 import { ItemNotFoundError } from '../errors';
 import { ItemDTO } from '../dtos';
 import { toDTO } from '../utils';
+import { ItemRepository } from '../repositories';
 
 /**
  * Service for handling item-related operations.
  */
 export class ItemService {
 
+    constructor(private readonly repository: ItemRepository) {}
+
     /**
      * Retrieves a list of all items.
      * @returns {Promise<ItemDTO[]>} A promise that resolves to an array of item DTOs.
      */
     async list(): Promise<ItemDTO[]> {
-        const items: DocumentItem[] = await Item.find().exec();
+        const items: any[] = await this.repository.find();
         
         return items.map(item => toDTO(item));
     }
@@ -25,7 +27,7 @@ export class ItemService {
      * @throws {ItemNotFoundError} If the item is not found.
      */
     async get(id: number): Promise<ItemDTO> {
-        const item: DocumentItem | null = await Item.findOne({ id });
+        const item: any | null = await this.repository.findOne(id);
         if (!item) {
             throw new ItemNotFoundError();
         }
@@ -39,8 +41,7 @@ export class ItemService {
      * @returns {Promise<ItemDTO>} A promise that resolves to the created item DTO.
      */
     async create(dto: ItemDTO): Promise<ItemDTO> {
-        const newItem: DocumentItem = new Item(dto);
-        const createdItem = await newItem.save();
+        const createdItem = await this.repository.save(dto);
 
         return toDTO(createdItem);
     }
@@ -52,8 +53,8 @@ export class ItemService {
      * @throws {ItemNotFoundError} If the item is not found.
      */
     async update(dto: ItemDTO): Promise<ItemDTO> {
-        const { id, name, price } = dto;
-        const item: DocumentItem | null = await Item.findOneAndUpdate({ id }, { name, price }, { new: true });
+        const { id } = dto;
+        const item: any | null = await this.repository.findOneAndUpdate(id, dto);
         if (!item) {
             throw new ItemNotFoundError();
         }
@@ -68,7 +69,7 @@ export class ItemService {
      * @throws {ItemNotFoundError} If the item is not found.
      */
     async delete(id: number): Promise<null> {
-        const item: DocumentItem | null = await Item.findOneAndDelete({ id });
+        const item: any | null = await this.repository.findOneAndDelete(id);
         if (!item) {
             throw new ItemNotFoundError();
         }

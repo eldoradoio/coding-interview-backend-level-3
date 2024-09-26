@@ -24,8 +24,8 @@ describe('E2E Tests', () => {
             })
     });
 
-    describe.only("Basic Items functionality", () => {
-        it.only("should be able to list all items", async () => {
+    describe("Basic Items functionality", () => {
+        it("should be able to list all items", async () => {
             const response = await server.inject({
                 method: 'GET',
                 url: '/items'
@@ -149,7 +149,7 @@ describe('E2E Tests', () => {
         })
     })
 
-    describe.skip("Validations", () => {
+    describe("Validations", () => {
 
         it("should validate required fields", async ()=>{
 

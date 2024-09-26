@@ -1,14 +1,24 @@
 import { Server } from "@hapi/hapi";
-import mongoose from 'mongoose';
 import { ItemController } from "./controllers";
 import { ItemService } from "./services";
 import { Configuration } from "../../config";
+import { MongoDBRepository, MemoryRepository } from "./repositories";
 
-export const initializeModule = async (server: Server, configuration: Configuration) => {
-    const { dbConnectionString } = configuration;
+let itemRepository: MemoryRepository | MongoDBRepository;
+
+/**
+ * Initializes the item module.
+ * Depending on the configuration, it creates either a memory-based repository or a MongoDB-based repository.
+ * @param {Server} server - The Hapi server instance.
+ * @param {Configuration} configuration - The configuration object containing repository type and database connection string.
+ * @returns {Promise<void>} A promise that resolves when the module is initialized.
+ */
+export const initializeModule = async (server: Server, configuration: Configuration): Promise<void> => {
+    const { repositoryType, dbConnectionString } = configuration;
     try {
-        const connection = await mongoose.connect(dbConnectionString);
-        const itemService = new ItemService();
+        itemRepository = repositoryType === 'memory' ? new MemoryRepository() : new MongoDBRepository(dbConnectionString);
+        itemRepository.initialize();
+        const itemService = new ItemService(itemRepository);
         const itemController = new ItemController(itemService);
         itemController.init(server);
     } catch (error) {
@@ -16,10 +26,15 @@ export const initializeModule = async (server: Server, configuration: Configurat
     }
 };
 
-export const stopModule = async () => {
+/**
+ * Stops the item module.
+ * Closes the repository connection.
+ * @returns {Promise<void>} A promise that resolves when the module is stopped.
+ */
+export const stopModule = async (): Promise<void> => {
     try {
-        await mongoose.connection.close();
+        return await itemRepository.stop();
     } catch (error) {
-        console.error('Error closing MongoDB connection', error);
+        console.error('Error closing respository connection', error);
     }
 };

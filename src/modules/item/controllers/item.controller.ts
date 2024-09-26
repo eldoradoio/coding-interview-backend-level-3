@@ -149,7 +149,9 @@ export class ItemController {
      * @returns {Promise<ResponseObject>} The response object.
      */
     public async update(request: Request, response: ResponseToolkit): Promise<ResponseObject> {
+        const { params: { id }} = request;
         const dto: ItemDTO = toDTO(request.payload);
+        dto.id = Number(id);
         const result = await this.itemService.update(dto);
 
         return response.response(result).code(200);
