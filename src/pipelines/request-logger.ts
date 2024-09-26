@@ -1,5 +1,11 @@
 import { Request, ResponseToolkit, Server } from '@hapi/hapi';
 
+/**
+ * Attaches request and response logging to the Hapi server.
+ * Logs the details of each incoming request and the corresponding response.
+ * 
+ * @param {Server} server - The Hapi server instance to which the logging will be attached.
+ */
 export const requestLogger = (server: Server) => {
     server.ext('onRequest', (request: Request, h: ResponseToolkit) => {
         const date = new Date().toISOString();
