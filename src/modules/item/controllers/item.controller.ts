@@ -60,7 +60,7 @@ export class ItemController {
                 path: '/items',
                 options: {
                     pre: [
-                        { method: validationPipe(itemCreationSchema), assign: 'validation' }
+                        { method: (request, h) => validationPipe(itemCreationSchema)(request, h), assign: 'validation' }
                     ],
                     handler: handleErrors(this.create),
                     description: 'Creates a new item',
@@ -73,7 +73,7 @@ export class ItemController {
                 path: '/items/{id}',
                 options: {
                     pre: [
-                        { method: validationPipe(itemUpdateSchema), assign: 'validation' }
+                        { method: (request: Request, h: ResponseToolkit) => validationPipe(itemUpdateSchema)(request, h), assign: 'validation' }
                     ],
                     handler: handleErrors(this.update),
                     description: 'Updates an item',
