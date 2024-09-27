@@ -2,3 +2,4 @@ node_modules
 mock.ts
 build/*
 .vscode/*
+.env
