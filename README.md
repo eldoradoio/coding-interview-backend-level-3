@@ -1,34 +1,59 @@
-# Bienvenido al coding-interview-backend-level-3
+# README
 
-## Descripción
-Este proyecto es una API REST que permite realizar operaciones CRUD sobre una entidad de tipo `Item`.
+## Explanation
 
-La entidad tiene 3 campos: `id`, `name` y `price`.
+- I have created a simple REST API for a blog application using Node.js, Hapi.js, and MongoDB.
+- The API has the following endpoints:
+  - GET /items
+  - POST /items
+  - GET /items/{id}
+  - PUT /items/{id}
+  - DELETE /items/{id}
 
-Tu tarea es completar la implementación de toda la funcionalidad de forma tal de que los tests e2e pasen exitosamente.
+- The API has Swagger documentation which can be accessed [here](http://localhost:3000/documentation) once the project is up.
 
-### Que puedes hacer: 
-- ✅ Modificar el código fuente y agregar nuevas clases, métodos, campos, etc.
-- ✅ Cambiar dependencias, agregar nuevas, etc.
-- ✅ Modificar la estructura del proyecto (/src/** es todo tuyo)
-- ✅ Elegir una base de datos
-- ✅ Elegir un framework web
-- ✅ Cambiar la definición del .devContainer
+- The API has the feature to switch between memory and MongoDB repositories. The repository type can be set in the .env file.
 
+- The API has logging created by my own logger module. Logs only appear in the console for now.
 
-### Que **no** puedes hacer:
-- ❌ No puedes modificar el archivo original /e2e/index.test.ts (pero puedes crear otros e2e test si lo deseas)
-- ❌ El proyecto debe usar Typescript 
-- ❌ Estresarte 🤗
+- The API has some basic tests written using Jest.
 
+- The API has a Dockerfile and a docker-compose file to run the application in a Docker container.
 
-## Pasos para comenzar
-1. Haz un fork usando este repositorio como template
-2. Clona el repositorio en tu máquina
-3. Realiza los cambios necesarios para que los tests pasen
-4. Sube tus cambios a tu repositorio
-5. Avísanos que has terminado
-6. ???
-7. PROFIT
+- The API has some basic error handling for all the endpoints.
 
-### Cualquier duda contactarme a https://www.linkedin.com/in/andreujuan/
+- The API has a basic validation pipeline for all the endpoints using Joi.
+
+## Installation
+
+1. Clone the repository
+
+    ```bash
+        git clone
+    ```
+
+2. Install the dependencies
+
+    ```bash
+        npm install
+    ```
+
+3. Create a .env file and add the following
+
+    ```bash
+        PORT=3000
+        DB_CONNECTION_STRING={your mongodb uri}
+        REPOSITORY_TYPE={memory | mongodb}
+    ```
+
+4. Run the server
+
+    ```bash
+        npm start
+    ```
+
+5. Run the tests
+
+    ```bash
+        npm test
+    ```
