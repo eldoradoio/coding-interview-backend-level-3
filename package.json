@@ -1,6 +1,6 @@
 {
-  "name": "coding-interview-backend-level-3",
-  "version": "1.0.0",
+  "name": "eldorado-coding-interview-backend-level-3",
+  "version": "1.0.1",
   "description": "Coding Interview Backend Level 3",
   "main": "src/index.ts",
   "scripts": {
