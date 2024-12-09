@@ -7,26 +7,35 @@ import {
   Param,
   Body,
   Res,
+  NotFoundException,
 } from '@nestjs/common';
 import { Response as ResponseExpress } from 'express';
 import { ItemsService } from './item.service';
+import { Iitems } from './items.interface';
 
 @Controller('items')
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
   @Get()
-  getFindAll() {
-    return this.itemsService.findAll();
+  async getFindAll(@Res() res: ResponseExpress) {
+    try {
+      const items: Iitems[] = await this.itemsService.getAllItem();
+      return res.status(200).json(items);
+    } catch (error: any) {
+      return this.handleError(res, error);
+    }
   }
 
   @Get(':id')
   async getFindOne(@Param('id') id: string, @Res() res: ResponseExpress) {
     try {
-      const rts = await this.itemsService.findOne(+id);
-      return res.status(200).send(rts);
+      const item = await this.itemsService.getByIdItem(+id);
+      return res.status(200).json(item);
     } catch (error: any) {
-      console.error('Ocurrió un error:', error.message || error);
+      if (error instanceof NotFoundException) {
+        return res.status(404).json({ error: 'Item not found', id });
+      }
       return res.status(500).json({
         error: 'Ocurrió un error en el API.',
         detail: error.message || error,
@@ -35,20 +44,49 @@ export class ItemsController {
   }
 
   @Post()
-  create(@Body() createItemDto: { name: string; price: number }) {
-    return this.itemsService.create(createItemDto);
+  async createItem(@Body() body: Iitems, @Res() res: ResponseExpress) {
+    try {
+      const newItem = await this.itemsService.createItem(body);
+      return res.status(201).json(newItem);
+    } catch (error: any) {
+      return this.handleError(res, error);
+    }
   }
 
   @Put(':id')
-  update(
+  async updateItem(
     @Param('id') id: string,
-    @Body() updateItemDto: { name: string; price: number },
+    @Body() body: Iitems,
+    @Res() res: ResponseExpress,
   ) {
-    return this.itemsService.update(+id, updateItemDto);
+    try {
+      const updatedItem = await this.itemsService.updateItem(+id, body);
+      return res.status(200).json(updatedItem);
+    } catch (error: any) {
+      return this.handleError(res, error);
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.itemsService.delete(+id);
+  async deleteItem(@Param('id') id: string, @Res() res: ResponseExpress) {
+    try {
+      const result = await this.itemsService.deleteItem(+id);
+      return res.status(204).json(result);
+    } catch (error: any) {
+      return this.handleError(res, error);
+    }
+  }
+
+  private handleError(res: ResponseExpress, error: any) {
+    console.log('API Error:', error.message || error);
+
+    if (error.response && error.response.errors) {
+      return res.status(error.status || 400).json(error.response);
+    }
+
+    return res.status(error.status || 500).json({
+      error: 'Ocurrió un error en el API.',
+      detail: error.message || error,
+    });
   }
 }
