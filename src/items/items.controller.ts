@@ -11,7 +11,9 @@ import {
 } from '@nestjs/common';
 import { Response as ResponseExpress } from 'express';
 import { ItemsService } from './item.service';
-import { Iitems } from './items.interface';
+import { IBaseItem } from './items.interface';
+
+const TABLE_DATA: string = 'PRUEBA_DORADO';
 
 @Controller('items')
 export class ItemsController {
@@ -20,7 +22,8 @@ export class ItemsController {
   @Get()
   async getFindAll(@Res() res: ResponseExpress) {
     try {
-      const items: Iitems[] = await this.itemsService.getAllItem();
+      const items: IBaseItem[] =
+        await this.itemsService.getAllItems(TABLE_DATA);
       return res.status(200).json(items);
     } catch (error: any) {
       return this.handleError(res, error);
@@ -30,7 +33,8 @@ export class ItemsController {
   @Get(':id')
   async getFindOne(@Param('id') id: string, @Res() res: ResponseExpress) {
     try {
-      const item = await this.itemsService.getByIdItem(+id);
+      const param: number = parseInt(id) || 0;
+      const item = await this.itemsService.getItemById(TABLE_DATA, param);
       return res.status(200).json(item);
     } catch (error: any) {
       if (error instanceof NotFoundException) {
@@ -44,9 +48,9 @@ export class ItemsController {
   }
 
   @Post()
-  async createItem(@Body() body: Iitems, @Res() res: ResponseExpress) {
+  async createItem(@Body() body: IBaseItem, @Res() res: ResponseExpress) {
     try {
-      const newItem = await this.itemsService.createItem(body);
+      const newItem = await this.itemsService.createItem(TABLE_DATA, body);
       return res.status(201).json(newItem);
     } catch (error: any) {
       return this.handleError(res, error);
@@ -56,11 +60,16 @@ export class ItemsController {
   @Put(':id')
   async updateItem(
     @Param('id') id: string,
-    @Body() body: Iitems,
+    @Body() body: IBaseItem,
     @Res() res: ResponseExpress,
   ) {
     try {
-      const updatedItem = await this.itemsService.updateItem(+id, body);
+      const param: number = parseInt(id) || 0;
+      const updatedItem = await this.itemsService.updateItem(
+        TABLE_DATA,
+        param,
+        body,
+      );
       return res.status(200).json(updatedItem);
     } catch (error: any) {
       return this.handleError(res, error);
@@ -70,7 +79,8 @@ export class ItemsController {
   @Delete(':id')
   async deleteItem(@Param('id') id: string, @Res() res: ResponseExpress) {
     try {
-      const result = await this.itemsService.deleteItem(+id);
+      const param: number = parseInt(id) || 0;
+      const result = await this.itemsService.deleteItem(TABLE_DATA, param);
       return res.status(204).json(result);
     } catch (error: any) {
       return this.handleError(res, error);

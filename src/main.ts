@@ -1,8 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { INestApplication } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(3005); //3005 porque el 3000 no me gusta:)
+  const PORT: number = 3005;
+  const app: INestApplication<any> = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: '*',
+    methods: ['POST', 'PUT', 'DELETE', 'GET'],
+    credentials: true,
+  });
+  console.log('Servidor corriendo en el puerto: ', PORT);
+  await app.listen(PORT);
 }
 bootstrap();

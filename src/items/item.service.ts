@@ -1,97 +1,65 @@
 import {
+  Inject,
   Injectable,
-  BadRequestException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
-import { Iitems } from './items.interface';
-
-const FAKEITEMS: Iitems[] = [
-  { id: 1, name: 'Item 1', price: 10 },
-  { id: 2, name: 'Item 2', price: 200 },
-  { id: 3, name: 'Item 2', price: 200 },
-  { id: 4, name: 'Item 2', price: 200 },
-  { id: 5, name: 'Item 2', price: 200 },
-  { id: 6, name: 'Item 2', price: 200 },
-  { id: 7, name: 'Item 2', price: 200 },
-];
-
-const FAKEITEMS_EMPTY: Iitems[] = [];
+import { Knex } from 'knex';
+import { IBaseItem } from './items.interface';
 
 @Injectable()
 export class ItemsService {
-  private items: Iitems[] = FAKEITEMS_EMPTY;
+  constructor(@Inject('AWS_POSTGRE') private readonly knex: Knex) {}
 
-  async getAllItem(): Promise<Iitems[]> {
-    try {
-      return Promise.resolve(this.items);
-    } catch (error: any) {
-      console.log('Error in findAll:', error.message || error);
-      throw new Error('Unexpected error occurred in findAll');
-    }
+  async getAllItems(tableName: string): Promise<IBaseItem[]> {
+    return this.knex(tableName).select('*');
   }
 
-  async getByIdItem(id: number): Promise<Iitems> {
-    try {
-      this.validateId(id);
-      const item = this.items.find((item) => item.id === id);
-      if (!item) {
-        throw new NotFoundException(`Item with ID ${id} not found`);
-      }
-      return Promise.resolve(item);
-    } catch (error: any) {
-      console.log('Error in findOne:', error.message || error);
-      throw error;
+  async getItemById(tableName: string, id: number): Promise<IBaseItem> {
+    this.validateId(id);
+    const item = await this.knex(tableName).where({ id }).first();
+    if (!item) {
+      throw new NotFoundException(`Item with ID ${id} not found`);
     }
+    return item;
   }
 
-  async createItem(item: Iitems): Promise<Iitems> {
-    try {
-      this.validateItemFields(item);
-      const newItem: Iitems = {
-        ...item,
-        id: this.generateId(),
-      };
-      this.items.push(newItem);
-      return newItem;
-    } catch (error: any) {
-      console.log('Error in create:', error.message || error);
-      throw error;
-    }
+  async createItem(tableName: string, item: IBaseItem): Promise<IBaseItem> {
+    this.validateItemFields(item);
+
+    const [newItem] = await this.knex(tableName).insert(item).returning('*');
+    return newItem;
   }
 
-  async updateItem(id: number, updatedItem: Iitems): Promise<Iitems> {
-    try {
-      this.validateId(id);
-      this.validateItemFields(updatedItem);
+  async updateItem(
+    tableName: string,
+    id: number,
+    updatedItem: IBaseItem,
+  ): Promise<IBaseItem> {
+    this.validateId(id);
+    this.validateItemFields(updatedItem);
 
-      const itemIndex = this.items.findIndex((item) => item.id === id);
-      if (itemIndex === -1) {
-        throw new NotFoundException(`Item with ID ${id} not found`);
-      }
-
-      this.items[itemIndex] = { ...this.items[itemIndex], ...updatedItem };
-      return this.items[itemIndex];
-    } catch (error: any) {
-      console.log('Error in update:', error.message || error);
-      throw error;
+    const [updated] = await this.knex(tableName)
+      .where({ id })
+      .update(updatedItem)
+      .returning('*');
+    if (!updated) {
+      throw new NotFoundException(`Item with ID ${id} not found`);
     }
+    return updated;
   }
 
-  async deleteItem(id: number): Promise<{ message: string }> {
-    try {
-      this.validateId(id);
+  async deleteItem(
+    tableName: string,
+    id: number,
+  ): Promise<{ message: string }> {
+    this.validateId(id);
 
-      const itemIndex = this.items.findIndex((item) => item.id === id);
-      if (itemIndex === -1) {
-        throw new NotFoundException(`Item with ID ${id} not found`);
-      }
-
-      this.items.splice(itemIndex, 1);
-      return { message: 'Item deleted successfully' };
-    } catch (error: any) {
-      console.log('Error in delete:', error.message || error);
-      throw error;
+    const deletedRows = await this.knex(tableName).where({ id }).delete();
+    if (deletedRows === 0) {
+      throw new NotFoundException(`Item with ID ${id} not found`);
     }
+    return { message: 'Item deleted successfully' };
   }
 
   private validateId(id: number): void {
@@ -100,14 +68,11 @@ export class ItemsService {
     }
   }
 
-  private validateItemFields(item: Iitems): void {
-    const errors = [];
+  private validateItemFields(item: IBaseItem): void {
+    const errors: { field: string; message: string }[] = [];
 
     if (!item.name || typeof item.name !== 'string') {
-      errors.push({
-        field: 'name',
-        message: 'Field "name" is required and must be a string',
-      });
+      errors.push({ field: 'name', message: 'Field "name" is required' });
     }
 
     if (
@@ -115,24 +80,27 @@ export class ItemsService {
       typeof item.price !== 'number' ||
       item.price < 0
     ) {
-      const message =
-        item.price === undefined
-          ? 'Field "price" is required'
-          : 'Field "price" cannot be negative';
       errors.push({
         field: 'price',
-        message,
+        message:
+          item.price === undefined
+            ? 'Field "price" is required'
+            : 'Field "price" cannot be negative',
+      });
+    }
+
+    if (
+      item.stock !== undefined &&
+      (typeof item.stock !== 'number' || item.stock < 0)
+    ) {
+      errors.push({
+        field: 'stock',
+        message: 'Field "stock" must be a non-negative number',
       });
     }
 
     if (errors.length > 0) {
       throw new BadRequestException({ errors });
     }
-  }
-
-  private generateId(): number {
-    return this.items.length > 0
-      ? Math.max(...this.items.map((item) => item.id)) + 1
-      : 1;
   }
 }
