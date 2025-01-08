@@ -1,7 +1,7 @@
 import { item } from '../../../models/item.ts';
 import { ItemRepository } from './itemRepository.ts';
 
-export class CreateItemUseCase {
+export class DeleteItemUseCase {
     
     itemRepository: ItemRepository;
     
@@ -9,8 +9,8 @@ export class CreateItemUseCase {
         this.itemRepository =  new ItemRepository(item);
     }
     // type item
-    async execute(data: any) {
-        const res =  await this.itemRepository.createItem(data);
+    async execute(data: number) {
+        const res =  await this.itemRepository.deleteItem(data);
         return res;
     }
 }

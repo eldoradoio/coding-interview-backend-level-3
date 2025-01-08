@@ -1,14 +1,15 @@
 import { item } from '../../../models/item.ts';
 import { ItemRepository } from './itemRepository.ts'
-export class FindItemByIdUseCase {
+
+export class FindItemsUseCase {
 
     itemRepository;
 
     constructor(readonly model: typeof item) {
         this.itemRepository = new ItemRepository(model);
     }
-    async execute(data: number) {
-        const res = await this.itemRepository.findItemById(data);
+    async execute() {
+        const res = await this.itemRepository.findAll();
         return res
     }
 }
