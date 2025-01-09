@@ -12,6 +12,8 @@ import {
     UpdateItemUseCase,
     DeleteItemUseCase
 } from '../../domain/useCases/index.ts';
+import { createItemRequestSchema } from '../../application/dtos/createItemDTO/createItem.request.ts';
+import { errorManager } from '../../../shared/helpers/errorManager.ts';
 
 const itemRepository = new ItemRepositorySequelizeAdapter();
 
@@ -42,6 +44,10 @@ export const CreateItemController = async (req: Request<ReqRefDefaults>, h: Resp
     try {
         const createItemUseCase = new CreateItemUseCase(itemRepository);
         const payload = req.payload as IItems
+        const validate = errorManager(createItemRequestSchema, payload);
+        if (validate) {
+            return h.response({ errors: validate }).code(HTTPCODES.badRequest);
+        }
         const res = await createItemUseCase.execute(payload);
         return h.response(res).code(HTTPCODES.successCreate);
     } catch (error) {
@@ -56,6 +62,10 @@ export const UpdateItemController = async (req: Request<ReqRefDefaults>, h: Resp
         const updateItemUseCase = new UpdateItemUseCase(itemRepository);
         const payload = req.payload as IItems;
         const id = req.params.id as number;
+        const validate = errorManager(createItemRequestSchema, { ...payload, id});
+        if (validate) {
+            return h.response({ errors: validate }).code(HTTPCODES.badRequest);
+        }
         const res = await updateItemUseCase.execute({ ...payload, id});
         return h.response(res).code(HTTPCODES.success);
     } catch (error) {

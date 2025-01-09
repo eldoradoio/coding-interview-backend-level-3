@@ -23,7 +23,7 @@ describe('E2E Tests', () => {
                 expect(response.result).toEqual({ ok: true })
             })
     });
-
+    
     describe("Basic Items functionality", () => {
         it("should be able to list all items", async () => {
             const response = await server.inject({
@@ -162,7 +162,7 @@ describe('E2E Tests', () => {
             expect(response2.statusCode).toBe(404)
         })
     })
-    /*
+
     describe("Validations", () => {
 
         it("should validate required fields", async ()=>{
@@ -176,15 +176,16 @@ describe('E2E Tests', () => {
             })
 
             expect(response.statusCode).toBe(400)
-            expect(response.result).toEqual({
-                errors: [
-                    {
-                        field: 'price',
-                        message: 'Field "price" is required'
-                    }
-                ]
-            })
-
+            expect(response.result).toEqual(
+                expect.objectContaining({
+                    errors: expect.arrayContaining([
+                        expect.objectContaining({
+                            field: 'price',
+                            message: 'Field "price" is required'
+                        })
+                    ])
+                })
+            );
         })
 
         it("should not allow for negative pricing for new items", async ()=>{
@@ -198,14 +199,16 @@ describe('E2E Tests', () => {
             })
 
             expect(response.statusCode).toBe(400)
-            expect(response.result).toEqual({
-                errors: [
-                    {
-                        field: 'price',
-                        message: 'Field "price" cannot be negative'
-                    }
-                ]
-            })
+            expect(response.result).toEqual(
+                expect.objectContaining({
+                    errors: expect.arrayContaining([
+                        expect.objectContaining({
+                            field: 'price',
+                            message: 'Field "price" cannot be negative'
+                        })
+                    ])
+                })
+            );
         })
 
         it("should not allow for negative pricing for updated items", async ()=>{
@@ -230,17 +233,18 @@ describe('E2E Tests', () => {
             })
 
             expect(response.statusCode).toBe(400)
-            expect(response.result).toEqual({
-                errors: [
-                    {
-                        field: 'price',
-                        message: 'Field "price" cannot be negative'
-                    }
-                ]
-            })
-        })
-    })
-    */
+            expect(response.result).toEqual(
+                expect.objectContaining({
+                    errors: expect.arrayContaining([
+                        expect.objectContaining({
+                            field: 'price',
+                            message: 'Field "price" cannot be negative'
+                        })
+                    ])
+                })
+            );
+        });
+    });
 
     afterAll(() => {
         return server.stop()
