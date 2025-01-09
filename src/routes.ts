@@ -7,9 +7,9 @@ export const defineRoutes = (server: Server) => {
             method: 'GET',
             path: '/ping',
             handler: async (request, h) => {
-                return {
+                return h.response({
                     ok: true
-                }
+                });
             }
         },
         ...RoutesItems

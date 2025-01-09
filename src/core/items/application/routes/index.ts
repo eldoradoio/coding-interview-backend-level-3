@@ -5,22 +5,22 @@ import {
     CreateItemController,
     UpdateItemController,
     DeleteItemController
-} from '../controllers/itemController.ts';
+} from '../../adapters/in/itemController.ts';
 
 export const RoutesItems: ServerRoute<ReqRefDefaults>[] = [
-    {
-        method: 'GET',
-        path: '/items',
-        handler: FindItemsController
-    },
     {
         method: 'GET',
         path: '/items/{id}',
         handler: FindItemByIdController
     },
     {
+        method: 'GET',
+        path: '/items',
+        handler: FindItemsController
+    },
+    {
         method: 'POST',
-        path: '/items/',
+        path: '/items',
         handler: CreateItemController
     }, {
         method: 'PUT',

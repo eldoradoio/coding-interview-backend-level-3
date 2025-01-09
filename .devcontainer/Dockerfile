@@ -10,3 +10,24 @@ RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
 
 # Set `DEVCONTAINER` environment variable to help with orientation
 ENV DEVCONTAINER=true
+
+# Establecer el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copiar el resto del código
+COPY . .
+
+# Instalar las dependencias
+RUN npm cache clean --force && npm install
+
+# Copiar el resto del código de la aplicación
+COPY . .
+
+# Establecer una variable de entorno para ES Modules
+ENV NODE_OPTIONS=--loader=ts-node/esm
+
+# Exponer el puerto de la aplicación
+EXPOSE 3000
+
+# Comando por defecto para ejecutar la app
+CMD ["npm", "run", "start:dev"]

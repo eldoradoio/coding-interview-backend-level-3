@@ -3,8 +3,8 @@ import { defineRoutes } from './routes.ts'
 
 const getServer = () => {
     const server = Hapi.server({
-        host: 'localhost',
-        port: 3000,
+        host: process.env.HOST_DOCKER || 'localhost',
+        port: process.env.PORT || 3000,
     })
 
     defineRoutes(server)

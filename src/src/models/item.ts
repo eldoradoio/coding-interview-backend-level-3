@@ -5,7 +5,7 @@ export interface itemAttributes {
   id: number;
   name?: string;
   price?: number;
-  created_at?: string;
+  created_at: string;
   updated_at?: string;
   deleted_at?: string;
 }
@@ -19,7 +19,7 @@ export class item extends Model<itemAttributes, itemCreationAttributes> implemen
   id!: number;
   name?: string;
   price?: number;
-  created_at?: string;
+  created_at!: string;
   updated_at?: string;
   deleted_at?: string;
 
@@ -45,9 +45,6 @@ export class item extends Model<itemAttributes, itemCreationAttributes> implemen
     tableName: 'item',
     timestamps: true,
     paranoid: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-    deletedAt: 'deleted_at',
     indexes: [
       {
         name: "PRIMARY",
