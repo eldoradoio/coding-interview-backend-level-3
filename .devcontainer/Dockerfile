@@ -23,8 +23,9 @@ RUN npm cache clean --force && npm install
 # Copiar el resto del código de la aplicación
 COPY . .
 
-# Establecer una variable de entorno para ES Modules
+# Establecer variables de entorno
 ENV NODE_OPTIONS=--loader=ts-node/esm
+ENV HOST_API_APP=0.0.0.0
 
 # Exponer el puerto de la aplicación
 EXPOSE 3000

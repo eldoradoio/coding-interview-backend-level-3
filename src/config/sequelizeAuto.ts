@@ -1,6 +1,13 @@
 import SequelizeAuto from 'sequelize-auto';
-const auto = new SequelizeAuto('bu4wembnuycqg4czxufz', 'u3jxiph0g0shxvdn', 'uHMvvanCtFUlO9OylMtG', {
-    host: 'bu4wembnuycqg4czxufz-mysql.services.clever-cloud.com',
+import 'dotenv/config';
+
+const DATABASE = process.env.DATABASE || '';
+const DB_USER = process.env.DB_USER || '';
+const DB_PASSWORD = process.env.DB_PASSWORD || '';
+const DB_HOST = process.env.DB_HOST || '';
+
+const auto = new SequelizeAuto(DATABASE, DB_USER, DB_PASSWORD, {
+    host: DB_HOST,
     dialect: 'mysql',
     directory: './src/models', // where to write files
     port: 3306,
