@@ -1,5 +1,6 @@
-import { initializeServer } from '../src/server'
 import { Server } from '@hapi/hapi'
+import { initializeServer } from '../src/server'
+import KnexDatabase from '../src/server/KnexDatabase'
 
 describe('E2E Tests', () => {
     let server: Server
@@ -151,7 +152,7 @@ describe('E2E Tests', () => {
 
     describe("Validations", () => {
 
-        it("should validate required fields", async ()=>{
+        it("should validate required fields", async () => {
 
             const response = await server.inject({
                 method: 'POST',
@@ -173,7 +174,7 @@ describe('E2E Tests', () => {
 
         })
 
-        it("should not allow for negative pricing for new items", async ()=>{
+        it("should not allow for negative pricing for new items", async () => {
             const response = await server.inject({
                 method: 'POST',
                 url: '/items',
@@ -194,7 +195,7 @@ describe('E2E Tests', () => {
             })
         })
 
-        it("should not allow for negative pricing for updated items", async ()=>{
+        it("should not allow for negative pricing for updated items", async () => {
             const { result: createdItem } = await server.inject<Item>({
                 method: 'POST',
                 url: '/items',
@@ -228,6 +229,7 @@ describe('E2E Tests', () => {
     })
 
     afterAll(() => {
+        KnexDatabase.destroy();
         return server.stop()
     })
 })
